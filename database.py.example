@@ -1,0 +1,181 @@
+"""
+Database Configuration Example
+
+This file shows how to set up database connection for PostgreSQL.
+Rename this file to database.py and update with your credentials.
+"""
+
+import psycopg2
+from psycopg2.extras import RealDictCursor
+from contextlib import contextmanager
+
+# Database configuration
+DB_CONFIG = {
+    "host": "localhost",
+    "port": 5432,
+    "database": "your_database_name",
+    "user": "your_username",
+    "password": "your_password"
+}
+
+@contextmanager
+def get_db_connection():
+    """
+    Context manager for database connections.
+    Automatically handles connection closing.
+
+    Usage:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM packages")
+            results = cursor.fetchall()
+    """
+    conn = psycopg2.connect(**DB_CONFIG, cursor_factory=RealDictCursor)
+    try:
+        yield conn
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
+        conn.close()
+
+# Example: Insert a package into the database
+def insert_package_example(package_data):
+    """
+    Example function showing how to insert a package into the database.
+
+    This is just a template - adapt it to your needs.
+    """
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+
+        query = """
+            INSERT INTO packages (
+                package_name, description, short_description,
+                duration_days, duration_nights, accommodation,
+                meals, activities, base_price, discount_percent,
+                final_price, max_capacity, current_bookings,
+                availability_status, featured, difficulty_level,
+                start_location, end_location, included_services,
+                excluded_services, terms_conditions, cancellation_policy
+            ) VALUES (
+                %(package_name)s, %(description)s, %(short_description)s,
+                %(duration_days)s, %(duration_nights)s, %(accommodation)s,
+                %(meals)s, %(activities)s, %(base_price)s, %(discount_percent)s,
+                %(final_price)s, %(max_capacity)s, %(current_bookings)s,
+                %(availability_status)s, %(featured)s, %(difficulty_level)s,
+                %(start_location)s, %(end_location)s, %(included_services)s,
+                %(excluded_services)s, %(terms_conditions)s, %(cancellation_policy)s
+            )
+            RETURNING package_id, created_at
+        """
+
+        cursor.execute(query, package_data)
+        result = cursor.fetchone()
+
+        return result
+
+# Example: Insert with transaction (for complete package)
+def insert_complete_package_example(package_data, categories, destinations, itinerary):
+    """
+    Example function showing how to insert a complete package with related data.
+    Uses a transaction to ensure all inserts succeed or all fail.
+    """
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+
+        try:
+            # 1. Insert package
+            package_query = """
+                INSERT INTO packages (...)
+                VALUES (...)
+                RETURNING package_id
+            """
+            cursor.execute(package_query, package_data)
+            package_id = cursor.fetchone()['package_id']
+
+            # 2. Insert category associations
+            for category_id in categories:
+                cursor.execute(
+                    "INSERT INTO package_categories (package_id, category_id) VALUES (%s, %s)",
+                    (package_id, category_id)
+                )
+
+            # 3. Insert destination associations
+            for dest in destinations:
+                cursor.execute(
+                    """
+                    INSERT INTO package_destinations
+                    (package_id, destination_id, is_primary, days_spent)
+                    VALUES (%s, %s, %s, %s)
+                    """,
+                    (package_id, dest['destination_id'], dest.get('is_primary', False), dest.get('days_spent'))
+                )
+
+            # 4. Insert itinerary items
+            for item in itinerary:
+                cursor.execute(
+                    """
+                    INSERT INTO itinerary
+                    (package_id, day_number, title, description, accommodation, meals, activities)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (package_id, item['day_number'], item['title'], item['description'],
+                     item.get('accommodation'), item.get('meals'), item.get('activities'))
+                )
+
+            conn.commit()
+            return {"package_id": package_id, "status": "success"}
+
+        except Exception as e:
+            conn.rollback()
+            raise e
+
+# Alternative: Using SQLAlchemy ORM
+"""
+If you prefer to use SQLAlchemy instead of raw SQL:
+
+1. Install SQLAlchemy:
+   pip install sqlalchemy psycopg2-binary
+
+2. Create models in models/database_models.py:
+
+from sqlalchemy import create_engine, Column, Integer, String, Numeric, Boolean, DateTime, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, relationship
+
+DATABASE_URL = "postgresql://user:password@localhost:5432/dbname"
+
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+class Package(Base):
+    __tablename__ = "packages"
+
+    package_id = Column(Integer, primary_key=True, index=True)
+    package_name = Column(String(255), nullable=False)
+    description = Column(String)
+    # ... add all other columns
+
+    categories = relationship("PackageCategory", back_populates="package")
+    destinations = relationship("PackageDestination", back_populates="package")
+    itinerary = relationship("Itinerary", back_populates="package")
+
+3. Use in your routers:
+
+from database import SessionLocal
+from models.database_models import Package
+
+def create_package(package_data):
+    db = SessionLocal()
+    try:
+        db_package = Package(**package_data)
+        db.add(db_package)
+        db.commit()
+        db.refresh(db_package)
+        return db_package
+    finally:
+        db.close()
+"""

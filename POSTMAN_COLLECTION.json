@@ -1,0 +1,278 @@
+{
+  "info": {
+    "name": "Tour Package Admin API",
+    "description": "Complete API collection for managing tour packages",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Packages",
+      "item": [
+        {
+          "name": "Create Package",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_name\": \"Amazing Himalayan Trek\",\n  \"description\": \"Experience the breathtaking views of the Himalayas\",\n  \"short_description\": \"7-day trek through mountain passes\",\n  \"duration_days\": 7,\n  \"duration_nights\": 6,\n  \"accommodation\": \"Mountain lodges and camping\",\n  \"meals\": \"Breakfast, Lunch, Dinner\",\n  \"activities\": \"Trekking, Mountain climbing, Photography\",\n  \"base_price\": 1500.00,\n  \"discount_percent\": 10,\n  \"final_price\": 1350.00,\n  \"max_capacity\": 15,\n  \"current_bookings\": 0,\n  \"availability_status\": \"available\",\n  \"featured\": true,\n  \"difficulty_level\": \"moderate\",\n  \"start_location\": \"Kathmandu\",\n  \"end_location\": \"Kathmandu\",\n  \"included_services\": \"Guide, Transportation, Accommodation, Meals\",\n  \"excluded_services\": \"International flights, Travel insurance\",\n  \"terms_conditions\": \"Full terms available on website\",\n  \"cancellation_policy\": \"Free cancellation up to 7 days before\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/packages/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "packages", ""]
+            }
+          }
+        },
+        {
+          "name": "Create Complete Package",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package\": {\n    \"package_name\": \"Everest Base Camp Trek\",\n    \"description\": \"Trek to the base camp of the world's highest mountain\",\n    \"short_description\": \"12-day trek to Everest Base Camp\",\n    \"duration_days\": 12,\n    \"duration_nights\": 11,\n    \"accommodation\": \"Tea houses and lodges\",\n    \"meals\": \"All meals included\",\n    \"activities\": \"High altitude trekking, Cultural immersion\",\n    \"base_price\": 2500.00,\n    \"discount_percent\": 15,\n    \"final_price\": 2125.00,\n    \"max_capacity\": 12,\n    \"current_bookings\": 0,\n    \"availability_status\": \"available\",\n    \"featured\": true,\n    \"difficulty_level\": \"difficult\",\n    \"start_location\": \"Kathmandu\",\n    \"end_location\": \"Kathmandu\",\n    \"included_services\": \"Guide, Porter, Accommodation, Meals, Permits\",\n    \"excluded_services\": \"International flights, Travel insurance\",\n    \"terms_conditions\": \"Good physical fitness required\",\n    \"cancellation_policy\": \"Free cancellation up to 14 days\"\n  },\n  \"categories\": [1],\n  \"destinations\": [\n    {\"destination_id\": 1, \"is_primary\": true, \"days_spent\": 10}\n  ],\n  \"itinerary\": [\n    {\n      \"package_id\": 1,\n      \"day_number\": 1,\n      \"title\": \"Arrival in Kathmandu\",\n      \"description\": \"Arrive and hotel check-in\",\n      \"accommodation\": \"Hotel\",\n      \"meals\": \"Dinner\",\n      \"activities\": \"City orientation\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/packages/complete",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "packages", "complete"]
+            }
+          }
+        },
+        {
+          "name": "Update Package Availability",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/packages/1/availability?availability_status=sold_out",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "packages", "1", "availability"],
+              "query": [
+                {
+                  "key": "availability_status",
+                  "value": "sold_out"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Toggle Featured",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/packages/1/featured?featured=true",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "packages", "1", "featured"],
+              "query": [
+                {
+                  "key": "featured",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_name\": \"Group Tours\",\n  \"description\": \"Tours designed for groups\",\n  \"icon_class\": \"fas fa-users\",\n  \"display_order\": 1,\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/categories/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "categories", ""]
+            }
+          }
+        },
+        {
+          "name": "Create Categories Bulk",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"category_name\": \"Group Tours\",\n    \"description\": \"Tours for groups\",\n    \"icon_class\": \"fas fa-users\",\n    \"display_order\": 1,\n    \"is_active\": true\n  },\n  {\n    \"category_name\": \"Personal Tours\",\n    \"description\": \"Individual tours\",\n    \"icon_class\": \"fas fa-user\",\n    \"display_order\": 2,\n    \"is_active\": true\n  }\n]"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/categories/bulk",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "categories", "bulk"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Destinations",
+      "item": [
+        {
+          "name": "Create Destination",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"destination_name\": \"Himalayan Mountains\",\n  \"country\": \"Nepal\",\n  \"description\": \"Majestic mountain range\",\n  \"image_url\": \"https://example.com/himalayas.jpg\",\n  \"is_popular\": true\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/destinations/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "destinations", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Itinerary",
+      "item": [
+        {
+          "name": "Create Itinerary Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"package_id\": 1,\n  \"day_number\": 1,\n  \"title\": \"Arrival Day\",\n  \"description\": \"Arrive at destination\",\n  \"accommodation\": \"Hotel\",\n  \"meals\": \"Dinner\",\n  \"activities\": \"Check-in and orientation\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/itinerary/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "itinerary", ""]
+            }
+          }
+        },
+        {
+          "name": "Create Itinerary Bulk",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"package_id\": 1,\n    \"day_number\": 1,\n    \"title\": \"Day 1\",\n    \"description\": \"First day activities\",\n    \"accommodation\": \"Hotel\",\n    \"meals\": \"Dinner\",\n    \"activities\": \"Orientation\"\n  },\n  {\n    \"package_id\": 1,\n    \"day_number\": 2,\n    \"title\": \"Day 2\",\n    \"description\": \"Second day activities\",\n    \"accommodation\": \"Hotel\",\n    \"meals\": \"All meals\",\n    \"activities\": \"Trekking\"\n  }\n]"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/itinerary/bulk",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "itinerary", "bulk"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inquiries",
+      "item": [
+        {
+          "name": "Create Inquiry",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"+1234567890\",\n  \"subject\": \"Tour Inquiry\",\n  \"message\": \"I would like more information about the tour\",\n  \"package_id\": 1,\n  \"status\": \"pending\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/inquiries/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "inquiries", ""]
+            }
+          }
+        },
+        {
+          "name": "Reply to Inquiry",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/inquiries/1/reply?reply_message=Thank you for your inquiry",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "inquiries", "1", "reply"],
+              "query": [
+                {
+                  "key": "reply_message",
+                  "value": "Thank you for your inquiry"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
