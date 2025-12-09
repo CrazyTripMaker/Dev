@@ -8,7 +8,7 @@ import { CategoriesList } from '../components/CategoriesList';
 import { DestinationForm } from '../components/DestinationForm';
 import { DestinationsList } from '../components/DestinationsList';
 import { ItineraryForm } from '../components/ItineraryForm';
-import { ItinerariesList } from '../components/tempname';
+import { ItinerariesList } from '../components/itineraryLists';
 import { usePackages } from '../hooks/usePackages';
 import { useCategories } from '../hooks/useCategories';
 import { useDestinations } from '../hooks/useDestinations';
