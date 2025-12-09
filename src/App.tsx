@@ -5,6 +5,7 @@ import PersonalTours from './pages/PersonalTours';
 import CustomisedTours from './pages/CustomisedTours';
 import Contact from './pages/Contact';
 import TourDetails from './pages/TourDetails';
+import { AdminDashboard } from './pages/AdminDashboard';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/customised-tours" element={<CustomisedTours />} />
         <Route path="/tour-details/:tourId" element={<TourDetails />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
     </Router>
   );
