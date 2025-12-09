@@ -5,7 +5,6 @@ import { Calendar, MapPin, Users, User, Heart, Check, Star, ArrowLeft, Phone, Ma
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
-
 const allToursDatabase = [
   // Group Tours
   {
@@ -17,14 +16,11 @@ const allToursDatabase = [
     type: "Group",
     category: "Himachal",
     destinations: ["Shimla", "Manali", "Dalhousie", "Golden Temple"],
-    description: "Experience the breathtaking beauty of Himachal Pradesh with this comprehensive tour package. Visit the most popular hill stations and spiritual sites.",
+    description: "Experience the breathtaking beauty of Himachal Pradesh with this comprehensive tour package.",
     detailedDescription: `
       This 9-day tour takes you through the most beautiful destinations in Himachal Pradesh. 
       Starting from Rajkot, you'll explore the colonial charm of Shimla, the adventure hub of Manali, 
       the serene landscapes of Dalhousie, and the spiritual tranquility of the Golden Temple in Amritsar.
-      
-      The package includes all major sightseeing, comfortable accommodations, and delicious meals. 
-      Perfect for travelers looking for a balanced mix of nature, adventure, and spirituality.
     `,
     inclusions: [
       "Accommodation in 3-star hotels",
@@ -58,6 +54,66 @@ const allToursDatabase = [
         description: "Travel to Manali via Kullu Valley. Visit Kullu Shawl Factory en route. Overnight in Manali."
       }
     ],
+    // ADDED: Departure options similar to the reference image
+    departureOptions: [
+      {
+        city: "Rajkot",
+        price: "12,999",
+        duration: "9 Days & 8 Nights",
+        originalPrice: "19,999",
+        discount: "35% OFF",
+        itinerary: [
+          {
+            day: "Day 0",
+            title: "Departure from Rajkot",
+            description: "Evening departure from Rajkot to Delhi by train/air."
+          },
+          {
+            day: "Day 1",
+            title: "Arrival in Delhi & Transfer to Shimla",
+            description: "Arrive in Delhi, meet our representative and proceed to Shimla. Overnight stay in Shimla."
+          }
+        ]
+      },
+      {
+        city: "Ahmedabad",
+        price: "11,999",
+        duration: "9 Days & 8 Nights",
+        originalPrice: "17,999",
+        discount: "33% OFF",
+        itinerary: [
+          {
+            day: "Day 0",
+            title: "Departure from Ahmedabad",
+            description: "Evening departure from Ahmedabad to Delhi by flight."
+          },
+          {
+            day: "Day 1",
+            title: "Arrival in Delhi & Transfer to Shimla",
+            description: "Arrive in Delhi, meet our representative and proceed to Shimla. Overnight stay in Shimla."
+          }
+        ]
+      },
+      {
+        city: "Mumbai",
+        price: "14,499",
+        duration: "9 Days & 8 Nights",
+        originalPrice: "21,999",
+        discount: "34% OFF",
+        itinerary: [
+          {
+            day: "Day 0",
+            title: "Departure from Mumbai",
+            description: "Morning departure from Mumbai to Delhi by flight."
+          },
+          {
+            day: "Day 1",
+            title: "Arrival in Delhi & Transfer to Shimla",
+            description: "Arrive in Delhi, meet our representative and proceed to Shimla. Overnight stay in Shimla."
+          }
+        ]
+      }
+    ],
     highlights: [
       "Stay in premium hotels with mountain views",
       "Visit Snow Point in Solang Valley",
@@ -83,14 +139,26 @@ export default function TourDetails() {
   const [tour, setTour] = useState<any>(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState('overview');
+  // ADDED: State for selected departure
+  const [selectedDeparture, setSelectedDeparture] = useState<any>(null);
 
   useEffect(() => {
     // In real app, fetch from API
     const foundTour = allToursDatabase.find(t => t.id === tourId);
     if (foundTour) {
       setTour(foundTour);
+      // Set first departure option as default
+      if (foundTour.departureOptions && foundTour.departureOptions.length > 0) {
+        setSelectedDeparture(foundTour.departureOptions[0]);
+      }
     }
   }, [tourId]);
+
+  const handleDepartureSelect = (departure: any) => {
+    setSelectedDeparture(departure);
+    // You can also update the main tour price if needed
+    // setTour({...tour, price: departure.price, departureCity: departure.city});
+  };
 
   if (!tour) {
     return (
@@ -114,6 +182,14 @@ export default function TourDetails() {
     "https://images.pexels.com/photos/962464/pexels-photo-962464.jpeg?auto=compress&cs=tinysrgb&w=800",
     "https://images.pexels.com/photos/3581368/pexels-photo-3581368.jpeg?auto=compress&cs=tinysrgb&w=800"
   ];
+
+  // Function to get current itinerary based on selected departure
+  const getCurrentItinerary = () => {
+    if (selectedDeparture && selectedDeparture.itinerary) {
+      return [...selectedDeparture.itinerary, ...tour.itinerary.slice(1)];
+    }
+    return tour.itinerary;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -144,7 +220,7 @@ export default function TourDetails() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-5 h-5" />
-                  <span>{tour.duration}</span>
+                  <span>{selectedDeparture?.duration || tour.duration}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Users className="w-5 h-5" />
@@ -170,6 +246,55 @@ export default function TourDetails() {
               <img src={img} alt={`Tour ${idx + 1}`} className="w-full h-full object-cover" />
             </button>
           ))}
+        </div>
+      </div>
+      
+      {/* ADDED: Join Us From Section */}
+      <div className="bg-white py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Join Us From</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {tour.departureOptions?.map((departure: any, index: number) => (
+              <div
+                key={index}
+                className={`border-2 rounded-xl p-4 cursor-pointer transition-all duration-300 ${
+                  selectedDeparture?.city === departure.city
+                    ? 'border-emerald-500 bg-emerald-50'
+                    : 'border-gray-200 hover:border-emerald-300 hover:bg-gray-50'
+                }`}
+                onClick={() => handleDepartureSelect(departure)}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-bold text-lg text-gray-800">{departure.city}</h3>
+                  {selectedDeparture?.city === departure.city && (
+                    <Check className="w-5 h-5 text-emerald-600" />
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Price</span>
+                    <span className="font-bold text-emerald-600">₹{departure.price}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Duration</span>
+                    <span className="font-medium">{departure.duration}</span>
+                  </div>
+                  {departure.originalPrice && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Original Price</span>
+                      <span className="text-sm line-through text-gray-500">₹{departure.originalPrice}</span>
+                    </div>
+                  )}
+                  {departure.discount && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Discount</span>
+                      <span className="text-sm font-semibold text-red-600">{departure.discount}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -218,7 +343,7 @@ export default function TourDetails() {
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Duration</p>
-                        <p className="font-semibold">{tour.duration}</p>
+                        <p className="font-semibold">{selectedDeparture?.duration || tour.duration}</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
@@ -236,7 +361,7 @@ export default function TourDetails() {
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Departure From</p>
-                        <p className="font-semibold">{tour.departureCity}</p>
+                        <p className="font-semibold">{selectedDeparture?.city || tour.departureCity}</p>
                       </div>
                     </div>
                   </div>
@@ -247,8 +372,14 @@ export default function TourDetails() {
             {activeTab === 'itinerary' && (
               <div className="space-y-6">
                 <h3 className="text-2xl font-bold text-gray-800">Detailed Itinerary</h3>
+                <div className="mb-4 p-4 bg-emerald-50 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <MapPin className="w-5 h-5 text-emerald-600" />
+                    <span className="font-medium">Departure from: {selectedDeparture?.city || tour.departureCity}</span>
+                  </div>
+                </div>
                 <div className="space-y-4">
-                  {tour.itinerary.map((day: any, idx: number) => (
+                  {getCurrentItinerary().map((day: any, idx: number) => (
                     <div key={idx} className="bg-white rounded-xl p-6 shadow-sm">
                       <div className="flex items-start space-x-4">
                         <div className="w-16 h-16 bg-emerald-100 rounded-xl flex flex-col items-center justify-center">
@@ -325,10 +456,16 @@ export default function TourDetails() {
                   </span>
                 </div>
                 <div className="flex items-baseline">
-                  <span className="text-4xl font-bold text-emerald-600">₹ {tour.price}</span>
+                  <span className="text-4xl font-bold text-emerald-600">₹ {selectedDeparture?.price || tour.price}</span>
                   <span className="text-gray-500 ml-2">/ person</span>
                 </div>
                 <p className="text-gray-500 text-sm mt-1">+ ₹ 3,999 taxes & fees</p>
+                {selectedDeparture?.originalPrice && (
+                  <p className="text-gray-400 text-sm">
+                    <span className="line-through">₹{selectedDeparture.originalPrice}</span>
+                    <span className="ml-2 text-red-600 font-medium">{selectedDeparture.discount}</span>
+                  </p>
+                )}
               </div>
 
               <div className="space-y-4 mb-8">
