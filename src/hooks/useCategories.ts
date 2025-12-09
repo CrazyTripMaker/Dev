@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { supabase, Category } from '../lib/supabase';
+import { Category } from '../lib/data';
+
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export function useCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -13,16 +15,15 @@ export function useCategories() {
   async function fetchCategories() {
     setLoading(true);
     setError(null);
-    try {
-      const { data, error: err } = await supabase
-        .from('categories')
-        .select('*')
-        .order('display_order', { ascending: true });
 
-      if (err) throw err;
-      setCategories(data || []);
+    try {
+      const res = await fetch(`${API_BASE}/categories`);
+      if (!res.ok) throw new Error("Failed to fetch categories");
+
+      const data = await res.json();
+      setCategories(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error fetching categories');
+      setError(err instanceof Error ? err.message : "Error fetching categories");
     } finally {
       setLoading(false);
     }
@@ -30,17 +31,20 @@ export function useCategories() {
 
   async function addCategory(category: Omit<Category, 'id' | 'created_at' | 'updated_at'>) {
     try {
-      const { data, error: err } = await supabase
-        .from('categories')
-        .insert([category])
-        .select()
-        .single();
+      const res = await fetch(`${API_BASE}/categories`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(category),
+      });
 
-      if (err) throw err;
-      setCategories([...categories, data]);
+      if (!res.ok) throw new Error("Failed to add category");
+
+      const data = await res.json();
+      setCategories(prev => [...prev, data]);
+
       return data;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error adding category';
+      const message = err instanceof Error ? err.message : "Error adding category";
       setError(message);
       throw err;
     }
@@ -48,18 +52,20 @@ export function useCategories() {
 
   async function updateCategory(id: string, updates: Partial<Category>) {
     try {
-      const { data, error: err } = await supabase
-        .from('categories')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
+      const res = await fetch(`${API_BASE}/categories/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
 
-      if (err) throw err;
-      setCategories(categories.map(c => c.id === id ? data : c));
+      if (!res.ok) throw new Error("Failed to update category");
+
+      const data = await res.json();
+      setCategories(prev => prev.map(c => (c.id === id ? data : c)));
+
       return data;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error updating category';
+      const message = err instanceof Error ? err.message : "Error updating category";
       setError(message);
       throw err;
     }
@@ -67,15 +73,15 @@ export function useCategories() {
 
   async function deleteCategory(id: string) {
     try {
-      const { error: err } = await supabase
-        .from('categories')
-        .delete()
-        .eq('id', id);
+      const res = await fetch(`${API_BASE}/categories/${id}`, {
+        method: "DELETE",
+      });
 
-      if (err) throw err;
-      setCategories(categories.filter(c => c.id !== id));
+      if (!res.ok) throw new Error("Failed to delete category");
+
+      setCategories(prev => prev.filter(c => c.id !== id));
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error deleting category';
+      const message = err instanceof Error ? err.message : "Error deleting category";
       setError(message);
       throw err;
     }

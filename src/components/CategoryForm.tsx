@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Category } from '../lib/supabase';
+import { Category } from '../lib/data';
 import { AlertCircle } from 'lucide-react';
 
 interface CategoryFormProps {

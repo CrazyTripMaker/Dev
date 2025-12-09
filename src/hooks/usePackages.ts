@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { supabase, Package } from '../lib/supabase';
+import { Package } from '../lib/data';
+
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export function usePackages() {
   const [packages, setPackages] = useState<Package[]>([]);
@@ -13,16 +15,15 @@ export function usePackages() {
   async function fetchPackages() {
     setLoading(true);
     setError(null);
-    try {
-      const { data, error: err } = await supabase
-        .from('packages')
-        .select('*')
-        .order('created_at', { ascending: false });
 
-      if (err) throw err;
-      setPackages(data || []);
+    try {
+      const res = await fetch(`${API_BASE}/packages`);
+      if (!res.ok) throw new Error("Failed to fetch packages");
+
+      const data = await res.json();
+      setPackages(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error fetching packages');
+      setError(err instanceof Error ? err.message : "Error fetching packages");
     } finally {
       setLoading(false);
     }
@@ -30,17 +31,20 @@ export function usePackages() {
 
   async function addPackage(pkg: Omit<Package, 'id' | 'created_at' | 'updated_at'>) {
     try {
-      const { data, error: err } = await supabase
-        .from('packages')
-        .insert([pkg])
-        .select()
-        .single();
+      const res = await fetch(`${API_BASE}/packages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pkg),
+      });
 
-      if (err) throw err;
-      setPackages([data, ...packages]);
+      if (!res.ok) throw new Error("Failed to add package");
+
+      const data = await res.json();
+      setPackages(prev => [data, ...prev]);
+
       return data;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error adding package';
+      const message = err instanceof Error ? err.message : "Error adding package";
       setError(message);
       throw err;
     }
@@ -48,18 +52,22 @@ export function usePackages() {
 
   async function updatePackage(id: string, updates: Partial<Package>) {
     try {
-      const { data, error: err } = await supabase
-        .from('packages')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
+      const res = await fetch(`${API_BASE}/packages/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
 
-      if (err) throw err;
-      setPackages(packages.map(p => p.id === id ? data : p));
+      if (!res.ok) throw new Error("Failed to update package");
+
+      const data = await res.json();
+      setPackages(prev =>
+        prev.map(p => (p.id === id ? data : p))
+      );
+
       return data;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error updating package';
+      const message = err instanceof Error ? err.message : "Error updating package";
       setError(message);
       throw err;
     }
@@ -67,19 +75,27 @@ export function usePackages() {
 
   async function deletePackage(id: string) {
     try {
-      const { error: err } = await supabase
-        .from('packages')
-        .delete()
-        .eq('id', id);
+      const res = await fetch(`${API_BASE}/packages/${id}`, {
+        method: "DELETE",
+      });
 
-      if (err) throw err;
-      setPackages(packages.filter(p => p.id !== id));
+      if (!res.ok) throw new Error("Failed to delete package");
+
+      setPackages(prev => prev.filter(p => p.id !== id));
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error deleting package';
+      const message = err instanceof Error ? err.message : "Error deleting package";
       setError(message);
       throw err;
     }
   }
 
-  return { packages, loading, error, fetchPackages, addPackage, updatePackage, deletePackage };
+  return {
+    packages,
+    loading,
+    error,
+    fetchPackages,
+    addPackage,
+    updatePackage,
+    deletePackage
+  };
 }

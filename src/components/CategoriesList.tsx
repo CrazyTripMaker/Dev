@@ -1,4 +1,4 @@
-import { Category } from '../lib/supabase';
+import { Category } from '../lib/data';
 import { Trash2 } from 'lucide-react';
 
 interface CategoriesListProps {

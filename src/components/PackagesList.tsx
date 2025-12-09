@@ -1,4 +1,4 @@
-import { Package } from '../lib/supabase';
+import { Package } from '../lib/data';
 import { Trash2 } from 'lucide-react';
 
 interface PackagesListProps {

@@ -1,16 +1,20 @@
+// AdminDashboard.tsx
 import { useState } from 'react';
-import { Package, Settings, MapPin, Tag } from 'lucide-react';
+import { Package, Settings, MapPin, Tag, Calendar } from 'lucide-react';
 import { PackageForm } from '../components/PackageForm';
 import { PackagesList } from '../components/PackagesList';
 import { CategoryForm } from '../components/CategoryForm';
 import { CategoriesList } from '../components/CategoriesList';
 import { DestinationForm } from '../components/DestinationForm';
 import { DestinationsList } from '../components/DestinationsList';
+import { ItineraryForm } from '../components/ItineraryForm';
+import { ItinerariesList } from '../components/ItineraryLists';
 import { usePackages } from '../hooks/usePackages';
 import { useCategories } from '../hooks/useCategories';
 import { useDestinations } from '../hooks/useDestinations';
+import { useItineraries } from '../hooks/useItineraries';
 
-type Tab = 'packages' | 'categories' | 'destinations';
+type Tab = 'packages' | 'categories' | 'destinations' | 'itineraries';
 
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('packages');
@@ -19,6 +23,7 @@ export function AdminDashboard() {
   const packages = usePackages();
   const categories = useCategories();
   const destinations = useDestinations();
+  const itineraries = useItineraries();
 
   const handleAddPackage = async (data: any) => {
     setIsSubmitting(true);
@@ -56,10 +61,23 @@ export function AdminDashboard() {
     }
   };
 
+  const handleAddItinerary = async (data: any) => {
+    setIsSubmitting(true);
+    try {
+      await itineraries.addItinerary(data);
+      alert('Itinerary added successfully!');
+    } catch {
+      // Error is handled by the hook
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: 'packages', label: 'Packages', icon: <Package className="w-5 h-5" /> },
     { id: 'categories', label: 'Categories', icon: <Tag className="w-5 h-5" /> },
     { id: 'destinations', label: 'Destinations', icon: <MapPin className="w-5 h-5" /> },
+    { id: 'itineraries', label: 'Itineraries', icon: <Calendar className="w-5 h-5" /> },
   ];
 
   return (
@@ -72,18 +90,18 @@ export function AdminDashboard() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-              <p className="text-sm text-gray-500">Manage packages, categories, and destinations</p>
+              <p className="text-sm text-gray-500">Manage packages, categories, destinations, and itineraries</p>
             </div>
           </div>
         </header>
 
         <div className="p-6">
-          <div className="flex gap-2 mb-6 border-b border-gray-200">
+          <div className="flex gap-2 mb-6 border-b border-gray-200 overflow-x-auto">
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 font-medium border-b-2 transition-colors ${
+                className={`flex items-center gap-2 px-4 py-3 font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'border-blue-600 text-blue-600'
                     : 'border-transparent text-gray-600 hover:text-gray-900'
@@ -126,6 +144,18 @@ export function AdminDashboard() {
                     onSubmit={handleAddDestination}
                     isLoading={isSubmitting}
                     error={destinations.error}
+                  />
+                </div>
+              )}
+
+              {activeTab === 'itineraries' && (
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Add New Itinerary Day</h2>
+                  <ItineraryForm
+                    onSubmit={handleAddItinerary}
+                    isLoading={isSubmitting}
+                    error={itineraries.error}
+                    packages={packages.packages}
                   />
                 </div>
               )}
@@ -177,6 +207,29 @@ export function AdminDashboard() {
                     <DestinationsList
                       destinations={destinations.destinations}
                       onDelete={destinations.deleteDestination}
+                      isDeleting={false}
+                    />
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'itineraries' && (
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Itineraries ({itineraries.itineraries.length})
+                    </h2>
+                    <div className="text-sm text-gray-500">
+                      Grouped by package
+                    </div>
+                  </div>
+                  {itineraries.loading ? (
+                    <p className="text-center text-gray-500">Loading itineraries...</p>
+                  ) : (
+                    <ItinerariesList
+                      itineraries={itineraries.itineraries}
+                      packages={packages.packages}
+                      onDelete={itineraries.deleteItinerary}
                       isDeleting={false}
                     />
                   )}

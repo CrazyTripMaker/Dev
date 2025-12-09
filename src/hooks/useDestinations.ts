@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { supabase, Destination } from '../lib/supabase';
+import { Destination } from '../lib/data';
+
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export function useDestinations() {
   const [destinations, setDestinations] = useState<Destination[]>([]);
@@ -13,16 +15,15 @@ export function useDestinations() {
   async function fetchDestinations() {
     setLoading(true);
     setError(null);
-    try {
-      const { data, error: err } = await supabase
-        .from('destinations')
-        .select('*')
-        .order('created_at', { ascending: false });
 
-      if (err) throw err;
-      setDestinations(data || []);
+    try {
+      const res = await fetch(`${API_BASE}/destinations`);
+      if (!res.ok) throw new Error("Failed to fetch destinations");
+
+      const data = await res.json();
+      setDestinations(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error fetching destinations');
+      setError(err instanceof Error ? err.message : "Error fetching destinations");
     } finally {
       setLoading(false);
     }
@@ -30,17 +31,20 @@ export function useDestinations() {
 
   async function addDestination(destination: Omit<Destination, 'id' | 'created_at' | 'updated_at'>) {
     try {
-      const { data, error: err } = await supabase
-        .from('destinations')
-        .insert([destination])
-        .select()
-        .single();
+      const res = await fetch(`${API_BASE}/destinations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(destination),
+      });
 
-      if (err) throw err;
-      setDestinations([data, ...destinations]);
+      if (!res.ok) throw new Error("Failed to add destination");
+
+      const data = await res.json();
+      setDestinations(prev => [data, ...prev]);
+
       return data;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error adding destination';
+      const message = err instanceof Error ? err.message : "Error adding destination";
       setError(message);
       throw err;
     }
@@ -48,18 +52,22 @@ export function useDestinations() {
 
   async function updateDestination(id: string, updates: Partial<Destination>) {
     try {
-      const { data, error: err } = await supabase
-        .from('destinations')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
+      const res = await fetch(`${API_BASE}/destinations/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
 
-      if (err) throw err;
-      setDestinations(destinations.map(d => d.id === id ? data : d));
+      if (!res.ok) throw new Error("Failed to update destination");
+
+      const data = await res.json();
+      setDestinations(prev =>
+        prev.map(d => (d.id === id ? data : d))
+      );
+
       return data;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error updating destination';
+      const message = err instanceof Error ? err.message : "Error updating destination";
       setError(message);
       throw err;
     }
@@ -67,19 +75,27 @@ export function useDestinations() {
 
   async function deleteDestination(id: string) {
     try {
-      const { error: err } = await supabase
-        .from('destinations')
-        .delete()
-        .eq('id', id);
+      const res = await fetch(`${API_BASE}/destinations/${id}`, {
+        method: "DELETE",
+      });
 
-      if (err) throw err;
-      setDestinations(destinations.filter(d => d.id !== id));
+      if (!res.ok) throw new Error("Failed to delete destination");
+
+      setDestinations(prev => prev.filter(d => d.id !== id));
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error deleting destination';
+      const message = err instanceof Error ? err.message : "Error deleting destination";
       setError(message);
       throw err;
     }
   }
 
-  return { destinations, loading, error, fetchDestinations, addDestination, updateDestination, deleteDestination };
+  return {
+    destinations,
+    loading,
+    error,
+    fetchDestinations,
+    addDestination,
+    updateDestination,
+    deleteDestination
+  };
 }

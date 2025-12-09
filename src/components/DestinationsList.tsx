@@ -1,4 +1,4 @@
-import { Destination } from '../lib/supabase';
+import { Destination } from '../lib/data';
 import { Trash2 } from 'lucide-react';
 
 interface DestinationsListProps {

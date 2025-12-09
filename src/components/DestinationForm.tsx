@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Destination } from '../lib/supabase';
+import { Destination } from '../lib/data';
 import { AlertCircle } from 'lucide-react';
 
 interface DestinationFormProps {
