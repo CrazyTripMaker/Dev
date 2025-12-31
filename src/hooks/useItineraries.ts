@@ -1,7 +1,8 @@
-// hooks/useItineraries.ts
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
-interface ItineraryItem {
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+export interface ItineraryItem {
   id: string;
   packageId: string;
   dayNumber: number;
@@ -12,76 +13,314 @@ interface ItineraryItem {
   meals?: string[];
   accommodation?: string;
   orderIndex: number;
+  departureCityId?: string;
 }
 
-export function useItineraries() {
+export function useItineraries(selectedPackageId?: string) {
   const [itineraries, setItineraries] = useState<ItineraryItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasFetched, setHasFetched] = useState(false);
 
-  useEffect(() => {
-    fetchItineraries();
-  }, []);
+  /**
+   * GET itineraries for a specific package
+   */
+  const fetchItineraries = useCallback(async (packageId?: string) => {
+    const targetPackageId = packageId || selectedPackageId;
+    
+    if (!targetPackageId) {
+      console.log('No packageId provided, clearing itineraries');
+      setItineraries([]);
+      setHasFetched(false);
+      return;
+    }
 
-  const fetchItineraries = async () => {
     try {
       setLoading(true);
-      // In a real app, this would be an API call
-      // For now, we'll use localStorage or mock data
-      const stored = localStorage.getItem('itineraries');
-      if (stored) {
-        setItineraries(JSON.parse(stored));
+      setError(null);
+      
+      const url = `${API_BASE_URL}/api/itinerary/${targetPackageId}/list`;
+      console.log('Fetching itineraries for package:', targetPackageId, 'URL:', url);
+
+      const res = await fetch(url);
+      
+      if (res.status === 404) {
+        // Package has no itineraries yet
+        console.log('No itineraries found for package:', targetPackageId);
+        setItineraries([]);
+        setHasFetched(true);
+        return;
       }
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Error response:', errorText);
+        throw new Error(`Failed to fetch itineraries: ${res.status} ${errorText}`);
+      }
+
+      const data = await res.json();
+      console.log('Received data for package', targetPackageId, ':', data);
+
+      // Convert backend snake_case to frontend camelCase and int IDs to strings
+      const formattedItineraries = (data.itinerary || []).map((item: any) => ({
+        id: String(item.id),
+        packageId: String(item.package_id),
+        dayNumber: item.day_number,
+        title: item.title,
+        description: item.description,
+        location: item.location || '',
+        includedActivities: Array.isArray(item.included_activities) 
+          ? item.included_activities 
+          : typeof item.included_activities === 'string'
+          ? [item.included_activities]
+          : [],
+        meals: Array.isArray(item.meals) 
+          ? item.meals 
+          : typeof item.meals === 'string'
+          ? [item.meals]
+          : [],
+        accommodation: item.accommodation || '',
+        orderIndex: item.order_index || 0,
+        departureCityId: item.departure_city_id ? String(item.departure_city_id) : undefined
+      }));
+
+      console.log('Formatted itineraries:', formattedItineraries);
+      setItineraries(formattedItineraries);
+      setHasFetched(true);
     } catch (err) {
-      setError('Failed to load itineraries');
+      setError(err instanceof Error ? err.message : 'Failed to load itineraries');
+      console.error('Fetch error:', err);
+      setItineraries([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedPackageId]);
 
-  const addItinerary = async (data: Omit<ItineraryItem, 'id'>) => {
+  /**
+   * Effect to fetch itineraries when selectedPackageId changes
+   */
+  useEffect(() => {
+    if (selectedPackageId) {
+      console.log('Selected package changed to:', selectedPackageId);
+      fetchItineraries(selectedPackageId);
+    } else {
+      // Clear itineraries if no package is selected
+      setItineraries([]);
+      setHasFetched(false);
+    }
+  }, [selectedPackageId, fetchItineraries]);
+
+  /**
+   * Manually refetch itineraries
+   */
+  const refetch = useCallback(() => {
+    return fetchItineraries(selectedPackageId);
+  }, [fetchItineraries, selectedPackageId]);
+
+  /**
+   * POST itinerary - for a specific package
+   */
+  const addItinerary = async (
+    payload: Omit<ItineraryItem, 'id'>
+  ) => {
+    // IMPORTANT: Use packageId from payload (comes from form), 
+    // NOT from selectedPackageId hook parameter
+    const targetPackageId = payload.packageId;
+    
+    if (!targetPackageId) {
+      throw new Error('Package ID is missing in the payload');
+    }
+
     try {
       setError(null);
-      const newItinerary = {
-        ...data,
-        id: `itinerary-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+
+      // Transform camelCase to snake_case for backend
+      const backendPayload: any = {
+        package_id: parseInt(targetPackageId, 10),
+        day_number: payload.dayNumber,
+        title: payload.title,
+        description: payload.description,
+        location: payload.location || null,
+        included_activities: Array.isArray(payload.includedActivities) 
+          ? payload.includedActivities 
+          : [],
+        accommodation: payload.accommodation || null,
+        order_index: payload.orderIndex || 0
       };
 
-      const updatedItineraries = [...itineraries, newItinerary];
-      setItineraries(updatedItineraries);
-      localStorage.setItem('itineraries', JSON.stringify(updatedItineraries));
-      return Promise.resolve();
+      // Handle meals conversion
+      if (Array.isArray(payload.meals)) {
+        backendPayload.meals = payload.meals.join(', ');
+      } else if (payload.meals) {
+        backendPayload.meals = payload.meals;
+      } else {
+        backendPayload.meals = '';
+      }
+
+      // Handle departure_city_id conversion - ONLY if it has a value
+      // Backend expects integer or null, not empty string
+      if (payload.departureCityId && payload.departureCityId.trim() !== '') {
+        const cityId = parseInt(payload.departureCityId, 10);
+        if (!isNaN(cityId)) {
+          backendPayload.departure_city_id = cityId;
+        } else {
+          backendPayload.departure_city_id = null;
+        }
+      } else {
+        backendPayload.departure_city_id = null; // Explicitly set to null
+      }
+
+      console.log('Adding itinerary to package:', targetPackageId, 'Payload:', backendPayload);
+
+      const res = await fetch(
+        `${API_BASE_URL}/api/itinerary/${targetPackageId}/itinerary`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(backendPayload),
+        }
+      );
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Error creating itinerary:', errorText);
+        throw new Error(`Failed to add itinerary: ${res.status} ${errorText}`);
+      }
+
+      const result = await res.json();
+      console.log('Itinerary created:', result);
+
+      // Refresh the itineraries list for THIS package
+      await fetchItineraries(targetPackageId);
+      return result;
     } catch (err) {
-      setError('Failed to add itinerary');
-      return Promise.reject(err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to add itinerary';
+      setError(errorMessage);
+      console.error('Add itinerary error:', err);
+      throw err;
     }
   };
 
-  const deleteItinerary = async (id: string) => {
+  /**
+   * DELETE itinerary
+   */
+  const deleteItinerary = async (itineraryId: string) => {
     try {
       setError(null);
-      const updatedItineraries = itineraries.filter(item => item.id !== id);
-      setItineraries(updatedItineraries);
-      localStorage.setItem('itineraries', JSON.stringify(updatedItineraries));
-      return Promise.resolve();
+
+      console.log('Deleting itinerary:', itineraryId);
+
+      const res = await fetch(
+        `${API_BASE_URL}/api/itinerary/itinerary/${itineraryId}`,
+        { method: 'DELETE' }
+      );
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Error deleting itinerary:', errorText);
+        throw new Error(`Failed to delete itinerary: ${res.status} ${errorText}`);
+      }
+
+      const result = await res.json();
+      console.log('Delete result:', result);
+
+      // Remove from local state
+      setItineraries(prev =>
+        prev.filter(item => item.id !== itineraryId)
+      );
+      
+      return result;
     } catch (err) {
-      setError('Failed to delete itinerary');
-      return Promise.reject(err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete itinerary';
+      setError(errorMessage);
+      console.error('Delete error:', err);
+      throw err;
     }
   };
 
-  const getItinerariesByPackage = (packageId: string) => {
-    return itineraries
-      .filter(item => item.packageId === packageId)
-      .sort((a, b) => a.dayNumber - b.dayNumber);
+  /**
+   * Update itinerary
+   */
+  const updateItinerary = async (
+    itineraryId: string,
+    updates: Partial<Omit<ItineraryItem, 'id' | 'packageId'>>
+  ) => {
+    try {
+      setError(null);
+
+      // Find the existing itinerary to preserve packageId and other fields
+      const existingItinerary = itineraries.find(item => item.id === itineraryId);
+      if (!existingItinerary) {
+        throw new Error('Itinerary not found');
+      }
+
+      // Transform camelCase to snake_case for backend
+      const backendPayload = {
+        package_id: parseInt(existingItinerary.packageId, 10),
+        departure_city_id: updates.departureCityId !== undefined 
+          ? (updates.departureCityId ? parseInt(updates.departureCityId, 10) : null)
+          : (existingItinerary.departureCityId ? parseInt(existingItinerary.departureCityId, 10) : null),
+        day_number: updates.dayNumber || existingItinerary.dayNumber,
+        title: updates.title || existingItinerary.title,
+        description: updates.description || existingItinerary.description,
+        location: updates.location !== undefined ? updates.location : existingItinerary.location,
+        included_activities: Array.isArray(updates.includedActivities) 
+          ? updates.includedActivities 
+          : (updates.includedActivities !== undefined 
+              ? [String(updates.includedActivities)] 
+              : existingItinerary.includedActivities || []),
+        meals: Array.isArray(updates.meals) 
+          ? updates.meals.join(', ')
+          : (updates.meals !== undefined 
+              ? String(updates.meals) 
+              : (Array.isArray(existingItinerary.meals) 
+                  ? existingItinerary.meals.join(', ')
+                  : existingItinerary.meals || '')),
+        accommodation: updates.accommodation !== undefined 
+          ? updates.accommodation 
+          : existingItinerary.accommodation,
+        order_index: updates.orderIndex || existingItinerary.orderIndex
+      };
+
+      console.log('Updating itinerary:', itineraryId, 'Payload:', backendPayload);
+
+      const res = await fetch(
+        `${API_BASE_URL}/api/itinerary/itinerary/${itineraryId}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(backendPayload),
+        }
+      );
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Error updating itinerary:', errorText);
+        throw new Error(`Failed to update itinerary: ${res.status} ${errorText}`);
+      }
+
+      const result = await res.json();
+      console.log('Itinerary updated:', result);
+
+      // Refresh the itineraries list
+      await refetch();
+      return result;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update itinerary';
+      setError(errorMessage);
+      console.error('Update error:', err);
+      throw err;
+    }
   };
 
   return {
     itineraries,
     loading,
     error,
+    hasFetched,
+    refetch,
     addItinerary,
     deleteItinerary,
-    getItinerariesByPackage
+    updateItinerary,
   };
 }

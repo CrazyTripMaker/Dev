@@ -8,8 +8,8 @@ interface PackagesListProps {
 }
 
 export function PackagesList({ packages, onDelete, isDeleting }: PackagesListProps) {
-  if (packages.length === 0) {
-    return <p className="text-center text-gray-500">No packages yet. Add one to get started!</p>;
+  if (!Array.isArray(packages)) {
+    return <p>No packages found</p>;
   }
 
   return (

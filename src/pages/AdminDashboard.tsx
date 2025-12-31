@@ -5,16 +5,13 @@ import { PackageForm } from '../components/PackageForm';
 import { PackagesList } from '../components/PackagesList';
 import { CategoryForm } from '../components/CategoryForm';
 import { CategoriesList } from '../components/CategoriesList';
-import { DestinationForm } from '../components/DestinationForm';
-import { DestinationsList } from '../components/DestinationsList';
 import { ItineraryForm } from '../components/ItineraryForm';
 import { ItinerariesList } from '../components/itineraryLists';
 import { usePackages } from '../hooks/usePackages';
 import { useCategories } from '../hooks/useCategories';
-import { useDestinations } from '../hooks/useDestinations';
 import { useItineraries } from '../hooks/useItineraries';
 
-type Tab = 'packages' | 'categories' | 'destinations' | 'itineraries';
+type Tab = 'packages' | 'categories' | 'itineraries';
 
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('packages');
@@ -22,7 +19,6 @@ export function AdminDashboard() {
 
   const packages = usePackages();
   const categories = useCategories();
-  const destinations = useDestinations();
   const itineraries = useItineraries();
 
   const handleAddPackage = async (data: any) => {
@@ -49,17 +45,17 @@ export function AdminDashboard() {
     }
   };
 
-  const handleAddDestination = async (data: any) => {
-    setIsSubmitting(true);
-    try {
-      await destinations.addDestination(data);
-      alert('Destination added successfully!');
-    } catch {
-      // Error is handled by the hook
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  //const handleAddDestination = async (data: any) => {
+  //  setIsSubmitting(true);
+  //  try {
+  //    await destinations.addDestination(data);
+  //    alert('Destination added successfully!');
+  //  } catch {
+  //    // Error is handled by the hook
+  //  } finally {
+  //    setIsSubmitting(false);
+  //  }
+  //};
 
   const handleAddItinerary = async (data: any) => {
     setIsSubmitting(true);
@@ -76,7 +72,6 @@ export function AdminDashboard() {
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: 'packages', label: 'Packages', icon: <Package className="w-5 h-5" /> },
     { id: 'categories', label: 'Categories', icon: <Tag className="w-5 h-5" /> },
-    { id: 'destinations', label: 'Destinations', icon: <MapPin className="w-5 h-5" /> },
     { id: 'itineraries', label: 'Itineraries', icon: <Calendar className="w-5 h-5" /> },
   ];
 
@@ -137,16 +132,7 @@ export function AdminDashboard() {
                 </div>
               )}
 
-              {activeTab === 'destinations' && (
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Add New Destination</h2>
-                  <DestinationForm
-                    onSubmit={handleAddDestination}
-                    isLoading={isSubmitting}
-                    error={destinations.error}
-                  />
-                </div>
-              )}
+              
 
               {activeTab === 'itineraries' && (
                 <div className="bg-white rounded-lg shadow-sm p-6">
@@ -165,7 +151,7 @@ export function AdminDashboard() {
               {activeTab === 'packages' && (
                 <div className="bg-white rounded-lg shadow-sm p-6">
                   <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                    Packages ({packages.packages.length})
+                    Packages ({packages.packages?.length ?? 0})
                   </h2>
                   {packages.loading ? (
                     <p className="text-center text-gray-500">Loading packages...</p>
@@ -182,7 +168,7 @@ export function AdminDashboard() {
               {activeTab === 'categories' && (
                 <div className="bg-white rounded-lg shadow-sm p-6">
                   <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                    Categories ({categories.categories.length})
+                    Categories ({categories.categories?.length ?? 0})
                   </h2>
                   {categories.loading ? (
                     <p className="text-center text-gray-500">Loading categories...</p>
@@ -196,28 +182,13 @@ export function AdminDashboard() {
                 </div>
               )}
 
-              {activeTab === 'destinations' && (
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                    Destinations ({destinations.destinations.length})
-                  </h2>
-                  {destinations.loading ? (
-                    <p className="text-center text-gray-500">Loading destinations...</p>
-                  ) : (
-                    <DestinationsList
-                      destinations={destinations.destinations}
-                      onDelete={destinations.deleteDestination}
-                      isDeleting={false}
-                    />
-                  )}
-                </div>
-              )}
+
 
               {activeTab === 'itineraries' && (
                 <div className="bg-white rounded-lg shadow-sm p-6">
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-lg font-semibold text-gray-900">
-                      Itineraries ({itineraries.itineraries.length})
+                      Itineraries ({itineraries.itineraries?.length ?? 0})
                     </h2>
                     <div className="text-sm text-gray-500">
                       Grouped by package

@@ -17,11 +17,11 @@ export function useDestinations() {
     setError(null);
 
     try {
-      const res = await fetch(`${API_BASE}/destinations`);
+      const res = await fetch(`${API_BASE}/api/destinations/list`);
       if (!res.ok) throw new Error("Failed to fetch destinations");
 
       const data = await res.json();
-      setDestinations(data);
+      setDestinations(data.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error fetching destinations");
     } finally {
@@ -31,7 +31,7 @@ export function useDestinations() {
 
   async function addDestination(destination: Omit<Destination, 'id' | 'created_at' | 'updated_at'>) {
     try {
-      const res = await fetch(`${API_BASE}/destinations`, {
+      const res = await fetch(`${API_BASE}/api/destinations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(destination),
@@ -52,7 +52,7 @@ export function useDestinations() {
 
   async function updateDestination(id: string, updates: Partial<Destination>) {
     try {
-      const res = await fetch(`${API_BASE}/destinations/${id}`, {
+      const res = await fetch(`${API_BASE}/api/destinations/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
@@ -75,7 +75,7 @@ export function useDestinations() {
 
   async function deleteDestination(id: string) {
     try {
-      const res = await fetch(`${API_BASE}/destinations/${id}`, {
+      const res = await fetch(`${API_BASE}/api/destinations/${id}`, {
         method: "DELETE",
       });
 

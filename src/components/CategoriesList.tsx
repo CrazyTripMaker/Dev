@@ -8,8 +8,8 @@ interface CategoriesListProps {
 }
 
 export function CategoriesList({ categories, onDelete, isDeleting }: CategoriesListProps) {
-  if (categories.length === 0) {
-    return <p className="text-center text-gray-500">No categories yet. Add one to get started!</p>;
+  if (!Array.isArray(categories)) {
+    return <p>No categories found</p>;
   }
 
   return (

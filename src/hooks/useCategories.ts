@@ -17,11 +17,11 @@ export function useCategories() {
     setError(null);
 
     try {
-      const res = await fetch(`${API_BASE}/categories`);
+      const res = await fetch(`${API_BASE}/api/categories/list`);
       if (!res.ok) throw new Error("Failed to fetch categories");
 
       const data = await res.json();
-      setCategories(data);
+      setCategories(data.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error fetching categories");
     } finally {
@@ -31,7 +31,7 @@ export function useCategories() {
 
   async function addCategory(category: Omit<Category, 'id' | 'created_at' | 'updated_at'>) {
     try {
-      const res = await fetch(`${API_BASE}/categories`, {
+      const res = await fetch(`${API_BASE}/api/categories`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(category),
@@ -52,7 +52,7 @@ export function useCategories() {
 
   async function updateCategory(id: string, updates: Partial<Category>) {
     try {
-      const res = await fetch(`${API_BASE}/categories/${id}`, {
+      const res = await fetch(`${API_BASE}/api/categories/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
@@ -73,7 +73,7 @@ export function useCategories() {
 
   async function deleteCategory(id: string) {
     try {
-      const res = await fetch(`${API_BASE}/categories/${id}`, {
+      const res = await fetch(`${API_BASE}/api/categories/${id}`, {
         method: "DELETE",
       });
 

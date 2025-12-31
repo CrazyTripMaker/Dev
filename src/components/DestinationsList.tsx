@@ -8,8 +8,8 @@ interface DestinationsListProps {
 }
 
 export function DestinationsList({ destinations, onDelete, isDeleting }: DestinationsListProps) {
-  if (destinations.length === 0) {
-    return <p className="text-center text-gray-500">No destinations yet. Add one to get started!</p>;
+  if (!Array.isArray(destinations)) {
+    return <p>No destinations found</p>;
   }
 
   return (
