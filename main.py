@@ -16,13 +16,15 @@ app.add_middleware(
 )
 
 # Import routers
-from routers import packages, categories, destinations, itinerary, inquiries
+from routers import packages, categories, destinations, itinerary, inquiries, departures, cities
 
 app.include_router(packages.router, prefix="/api/packages", tags=["Packages"])
 app.include_router(categories.router, prefix="/api/categories", tags=["Categories"])
 app.include_router(destinations.router, prefix="/api/destinations", tags=["Destinations"])
 app.include_router(itinerary.router, prefix="/api/itinerary", tags=["Itinerary"])
 app.include_router(inquiries.router, prefix="/api/inquiries", tags=["Inquiries"])
+app.include_router(departures.router, prefix="/api/departures", tags=["Departures"])
+app.include_router(cities.router, prefix="/api/cities", tags=["Cities"])
 
 @app.get("/")
 def read_root():

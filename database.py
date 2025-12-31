@@ -17,7 +17,7 @@ DB_CONFIG = {
     "database": "CrazyTripMaker",
     "user": "postgres",
     "password": "Darshil@2606",
-    "options": f"-c search_path=CMT"  # Set default schema
+    "options": f"-c search_path=CTM"  # Set default schema
 }
 
 @contextmanager
@@ -124,7 +124,7 @@ def update_package(package_id: int, package_data: Dict[str, Any]) -> bool:
             return True
         return False
 
-def delete_package(package_id: int) -> bool:
+def delete_package_db(package_id: int) -> bool:
     """
     Delete a package and all related data.
     Uses CASCADE delete for relationships.
@@ -136,15 +136,16 @@ def delete_package(package_id: int) -> bool:
         True if deletion successful
     """
     with get_db_connection() as conn:
+        conn.autocommit = True
         cursor = get_db_cursor(conn)
         
         # Check if package exists
-        cursor.execute("SELECT package_id FROM packages WHERE package_id = %s", (package_id,))
+        cursor.execute("""SELECT package_id FROM "CTM".packages WHERE package_id = %s""", (package_id,))
         if not cursor.fetchone():
             return False
-        
+
         # Delete package (cascade will handle related records)
-        cursor.execute("DELETE FROM packages WHERE package_id = %s", (package_id,))
+        cursor.execute("""DELETE FROM "CTM".packages WHERE package_id = %s""", (package_id,))
         logger.info(f"Package {package_id} deleted successfully")
         return True
 
@@ -310,27 +311,40 @@ def insert_complete_package(
 
 def link_package_category(package_id: int, category_id: int) -> bool:
     """
-    Link a package to a category.
-    
-    Args:
-        package_id: Package ID
-        category_id: Category ID
-    
-    Returns:
-        True if link successful
+    Link a package to a category and update list_packages array.
     """
     with get_db_connection() as conn:
         cursor = get_db_cursor(conn)
-        
+
         try:
+            # Insert into mapping table
             cursor.execute(
-                "INSERT INTO CTM.package_categories (package_id, category_id) VALUES (%s, %s)",
+                """
+                INSERT INTO CTM.package_categories (package_id, category_id)
+                VALUES (%s, %s)
+                ON CONFLICT DO NOTHING
+                """,
                 (package_id, category_id)
             )
-            logger.info(f"Linked package {package_id} to category {category_id}")
+
+            # Update category list_packages array (append if not exists)
+            cursor.execute(
+                """
+                UPDATE CTM.categories
+                SET list_packages = array_append(list_packages, %s)
+                WHERE category_id = %s
+                  AND NOT (list_packages @> ARRAY[%s])
+                """,
+                (package_id, category_id, package_id)
+            )
+
+            conn.commit()
+            logger.info(f"Linked package {package_id} to category {category_id} and updated list_packages")
             return True
-        except psycopg2.IntegrityError:
-            # Link already exists or foreign key violation
+
+        except psycopg2.Error as e:
+            logger.error(f"Error linking package to category: {e}")
+            conn.rollback()
             return False
 
 def link_package_destination(
@@ -340,62 +354,68 @@ def link_package_destination(
     days_spent: Optional[int] = None
 ) -> bool:
     """
-    Link a package to a destination.
-    
-    Args:
-        package_id: Package ID
-        destination_id: Destination ID
-        is_primary: Whether this is primary destination
-        days_spent: Number of days spent at destination
-    
-    Returns:
-        True if link successful
+    Link a package to a destination and update destination.list_packages.
     """
     with get_db_connection() as conn:
         cursor = get_db_cursor(conn)
-        
+
         try:
+            # Insert into junction table
             cursor.execute(
                 """
                 INSERT INTO "CTM".package_destinations
                 (package_id, destination_id, is_primary, days_spent)
                 VALUES (%s, %s, %s, %s)
+                ON CONFLICT DO NOTHING
                 """,
                 (package_id, destination_id, is_primary, days_spent)
             )
-            logger.info(f"Linked package {package_id} to destination {destination_id}")
+
+            # Append package_id to list_packages array (if not present)
+            cursor.execute(
+                """
+                UPDATE "CTM".destinations
+                SET list_packages = array_append(list_packages, %s)
+                WHERE destination_id = %s
+                  AND NOT (list_packages @> ARRAY[%s])
+                """,
+                (package_id, destination_id, package_id)
+            )
+
+            conn.commit()
+            logger.info(f"Linked destination {destination_id} to package {package_id} and updated list_packages")
             return True
-        except psycopg2.IntegrityError:
-            # Link already exists or foreign key violation
+
+        except psycopg2.Error as e:
+            logger.error(f"Error linking package to destination: {e}")
+            conn.rollback()
             return False
 
 # ============ CATEGORY OPERATIONS ============
 
 def insert_category(category_data: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Insert a new category.
-    
-    Args:
-        category_data: Category details
-    
-    Returns:
-        Dictionary with category ID
-    """
     with get_db_connection() as conn:
         cursor = get_db_cursor(conn)
-        
+
+        payload = {
+            "category_name": category_data["category_name"],
+            "description": category_data.get("description"),
+            "icon_class": category_data.get("icon_class"),
+            "display_order": category_data.get("display_order", 0),
+            "is_active": category_data.get("is_active", True),
+            "parent_category_id": category_data.get("parent_category_id")
+        }
+
         query = """
             INSERT INTO "CTM".categories 
             (category_name, description, icon_class, display_order, is_active, parent_category_id)
-            VALUES (%(category_name)s, %(description)s, %(icon_class)s, 
+            VALUES (%(category_name)s, %(description)s, %(icon_class)s,
                     %(display_order)s, %(is_active)s, %(parent_category_id)s)
             RETURNING category_id
         """
-        
-        cursor.execute(query, category_data)
-        result = cursor.fetchone()
-        logger.info(f"Category inserted with ID: {result['category_id']}")
-        return dict(result)
+
+        cursor.execute(query, payload)
+        return dict(cursor.fetchone())
 
 def insert_categories_bulk(categories_list: List[Dict[str, Any]]) -> int:
     """
@@ -457,7 +477,7 @@ def update_category(category_id: int, category_data: Dict[str, Any]) -> bool:
         
         params['category_id'] = category_id
         query = f"""
-            UPDATE categories 
+            UPDATE "CTM".categories 
             SET {', '.join(update_fields)}
             WHERE category_id = %(category_id)s
             RETURNING category_id
@@ -485,12 +505,12 @@ def delete_category(category_id: int) -> bool:
         cursor = get_db_cursor(conn)
         
         # Check if category exists
-        cursor.execute("SELECT category_id FROM categories WHERE category_id = %s", (category_id,))
+        cursor.execute("""SELECT category_id FROM "CTM".categories WHERE category_id = %s""", (category_id,))
         if not cursor.fetchone():
             return False
         
         # Delete category
-        cursor.execute("DELETE FROM categories WHERE category_id = %s", (category_id,))
+        cursor.execute("""DELETE FROM "CTM".categories WHERE category_id = %s""", (category_id,))
         logger.info(f"Category {category_id} deleted successfully")
         return True
 
@@ -509,7 +529,7 @@ def update_category_status(category_id: int, is_active: bool) -> bool:
         cursor = get_db_cursor(conn)
         
         query = """
-            UPDATE categories 
+            UPDATE "CTM".categories 
             SET is_active = %s
             WHERE category_id = %s
             RETURNING category_id
@@ -538,7 +558,7 @@ def update_category_display_order(category_id: int, display_order: int) -> bool:
         cursor = get_db_cursor(conn)
         
         query = """
-            UPDATE categories 
+            UPDATE "CTM".categories 
             SET display_order = %s
             WHERE category_id = %s
             RETURNING category_id
@@ -816,157 +836,157 @@ def delete_inquiry(inquiry_id: int) -> bool:
         logger.info(f"Inquiry {inquiry_id} deleted successfully")
         return True
 
-# ============ ITINERARY OPERATIONS ============
-
-def insert_itinerary_item(itinerary_data: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Insert a single itinerary item.
-    
-    Args:
-        itinerary_data: Itinerary item details
-    
-    Returns:
-        Dictionary with itinerary ID
-    """
-    with get_db_connection() as conn:
-        cursor = get_db_cursor(conn)
-        
-        query = """
-            INSERT INTO "CTM".itinerary 
-            (package_id, day_number, title, description, accommodation, meals, activities)
-            VALUES (%(package_id)s, %(day_number)s, %(title)s, %(description)s, 
-                    %(accommodation)s, %(meals)s, %(activities)s)
-            RETURNING itinerary_id, created_at
-        """
-        
-        cursor.execute(query, itinerary_data)
-        result = cursor.fetchone()
-        logger.info(f"Itinerary item inserted with ID: {result['itinerary_id']}")
-        return dict(result)
-
-def insert_itinerary_bulk(itinerary_list: List[Dict[str, Any]]) -> int:
-    """
-    Insert multiple itinerary items at once.
-    
-    Args:
-        itinerary_list: List of itinerary item dictionaries
-    
-    Returns:
-        Number of items inserted
-    """
-    if not itinerary_list:
-        return 0
-    
-    with get_db_connection() as conn:
-        cursor = get_db_cursor(conn)
-        
-        inserted_count = 0
-        for item in itinerary_list:
-            try:
-                cursor.execute(
-                    """
-                    INSERT INTO "CTM".itinerary 
-                    (package_id, day_number, title, description, accommodation, meals, activities)
-                    VALUES (%(package_id)s, %(day_number)s, %(title)s, %(description)s, 
-                            %(accommodation)s, %(meals)s, %(activities)s)
-                    """,
-                    item
-                )
-                inserted_count += 1
-            except Exception as e:
-                logger.warning(f"Failed to insert itinerary item: {e}")
-                continue
-        
-        logger.info(f"Bulk inserted {inserted_count} itinerary items")
-        return inserted_count
-
-def update_itinerary_item(itinerary_id: int, itinerary_data: Dict[str, Any]) -> bool:
-    """
-    Update an itinerary item.
-    
-    Args:
-        itinerary_id: Itinerary item ID
-        itinerary_data: Updated itinerary details
-    
-    Returns:
-        True if update successful
-    """
-    with get_db_connection() as conn:
-        cursor = get_db_cursor(conn)
-        
-        update_fields = []
-        params = {}
-        
-        for field, value in itinerary_data.items():
-            if value is not None:
-                update_fields.append(f"{field} = %({field})s")
-                params[field] = value
-        
-        if not update_fields:
-            return False
-        
-        params['itinerary_id'] = itinerary_id
-        query = f"""
-            UPDATE itinerary 
-            SET {', '.join(update_fields)}, updated_at = CURRENT_TIMESTAMP
-            WHERE itinerary_id = %(itinerary_id)s
-            RETURNING itinerary_id
-        """
-        
-        cursor.execute(query, params)
-        result = cursor.fetchone()
-        
-        if result:
-            logger.info(f"Itinerary item {itinerary_id} updated successfully")
-            return True
-        return False
-
-def delete_itinerary_item(itinerary_id: int) -> bool:
-    """
-    Delete a single itinerary item.
-    
-    Args:
-        itinerary_id: Itinerary item ID
-    
-    Returns:
-        True if deletion successful
-    """
-    with get_db_connection() as conn:
-        cursor = get_db_cursor(conn)
-        
-        # Check if item exists
-        cursor.execute("SELECT itinerary_id FROM itinerary WHERE itinerary_id = %s", (itinerary_id,))
-        if not cursor.fetchone():
-            return False
-        
-        # Delete item
-        cursor.execute("DELETE FROM itinerary WHERE itinerary_id = %s", (itinerary_id,))
-        logger.info(f"Itinerary item {itinerary_id} deleted successfully")
-        return True
-
-def delete_package_itinerary(package_id: int) -> bool:
-    """
-    Delete all itinerary items for a package.
-    
-    Args:
-        package_id: Package ID
-    
-    Returns:
-        True if deletion successful
-    """
-    with get_db_connection() as conn:
-        cursor = get_db_cursor(conn)
-        
-        # Check if package exists
-        cursor.execute("SELECT package_id FROM packages WHERE package_id = %s", (package_id,))
-        if not cursor.fetchone():
-            return False
-        
-        # Delete all itinerary items for this package
-        cursor.execute("DELETE FROM itinerary WHERE package_id = %s", (package_id,))
-        deleted_count = cursor.rowcount
-        logger.info(f"Deleted {deleted_count} itinerary items for package {package_id}")
-        return deleted_count > 0
+## ============ ITINERARY OPERATIONS ============
+#
+#def insert_itinerary_item(itinerary_data: Dict[str, Any]) -> Dict[str, Any]:
+#    """
+#    Insert a single itinerary item.
+#    
+#    Args:
+#        itinerary_data: Itinerary item details
+#    
+#    Returns:
+#        Dictionary with itinerary ID
+#    """
+#    with get_db_connection() as conn:
+#        cursor = get_db_cursor(conn)
+#        
+#        query = """
+#            INSERT INTO "CTM".itinerary 
+#            (package_id, day_number, title, description, accommodation, meals, activities)
+#            VALUES (%(package_id)s, %(day_number)s, %(title)s, %(description)s, 
+#                    %(accommodation)s, %(meals)s, %(activities)s)
+#            RETURNING itinerary_id, created_at
+#        """
+#        
+#        cursor.execute(query, itinerary_data)
+#        result = cursor.fetchone()
+#        logger.info(f"Itinerary item inserted with ID: {result['itinerary_id']}")
+#        return dict(result)
+#
+#def insert_itinerary_bulk(itinerary_list: List[Dict[str, Any]]) -> int:
+#    """
+#    Insert multiple itinerary items at once.
+#    
+#    Args:
+#        itinerary_list: List of itinerary item dictionaries
+#    
+#    Returns:
+#        Number of items inserted
+#    """
+#    if not itinerary_list:
+#        return 0
+#    
+#    with get_db_connection() as conn:
+#        cursor = get_db_cursor(conn)
+#        
+#        inserted_count = 0
+#        for item in itinerary_list:
+#            try:
+#                cursor.execute(
+#                    """
+#                    INSERT INTO "CTM".itinerary 
+#                    (package_id, day_number, title, description, accommodation, meals, activities)
+#                    VALUES (%(package_id)s, %(day_number)s, %(title)s, %(description)s, 
+#                            %(accommodation)s, %(meals)s, %(activities)s)
+#                    """,
+#                    item
+#                )
+#                inserted_count += 1
+#            except Exception as e:
+#                logger.warning(f"Failed to insert itinerary item: {e}")
+#                continue
+#        
+#        logger.info(f"Bulk inserted {inserted_count} itinerary items")
+#        return inserted_count
+#
+#def update_itinerary_item(itinerary_id: int, itinerary_data: Dict[str, Any]) -> bool:
+#    """
+#    Update an itinerary item.
+#    
+#    Args:
+#        itinerary_id: Itinerary item ID
+#        itinerary_data: Updated itinerary details
+#    
+#    Returns:
+#        True if update successful
+#    """
+#    with get_db_connection() as conn:
+#        cursor = get_db_cursor(conn)
+#        
+#        update_fields = []
+#        params = {}
+#        
+#        for field, value in itinerary_data.items():
+#            if value is not None:
+#                update_fields.append(f"{field} = %({field})s")
+#                params[field] = value
+#        
+#        if not update_fields:
+#            return False
+#        
+#        params['itinerary_id'] = itinerary_id
+#        query = f"""
+#            UPDATE itinerary 
+#            SET {', '.join(update_fields)}, updated_at = CURRENT_TIMESTAMP
+#            WHERE itinerary_id = %(itinerary_id)s
+#            RETURNING itinerary_id
+#        """
+#        
+#        cursor.execute(query, params)
+#        result = cursor.fetchone()
+#        
+#        if result:
+#            logger.info(f"Itinerary item {itinerary_id} updated successfully")
+#            return True
+#        return False
+#
+#def delete_itinerary_item(itinerary_id: int) -> bool:
+#    """
+#    Delete a single itinerary item.
+#    
+#    Args:
+#        itinerary_id: Itinerary item ID
+#    
+#    Returns:
+#        True if deletion successful
+#    """
+#    with get_db_connection() as conn:
+#        cursor = get_db_cursor(conn)
+#        
+#        # Check if item exists
+#        cursor.execute("SELECT itinerary_id FROM itinerary WHERE itinerary_id = %s", (itinerary_id,))
+#        if not cursor.fetchone():
+#            return False
+#        
+#        # Delete item
+#        cursor.execute("DELETE FROM itinerary WHERE itinerary_id = %s", (itinerary_id,))
+#        logger.info(f"Itinerary item {itinerary_id} deleted successfully")
+#        return True
+#
+#def delete_package_itinerary(package_id: int) -> bool:
+#    """
+#    Delete all itinerary items for a package.
+#    
+#    Args:
+#        package_id: Package ID
+#    
+#    Returns:
+#        True if deletion successful
+#    """
+#    with get_db_connection() as conn:
+#        cursor = get_db_cursor(conn)
+#        
+#        # Check if package exists
+#        cursor.execute("SELECT package_id FROM packages WHERE package_id = %s", (package_id,))
+#        if not cursor.fetchone():
+#            return False
+#        
+#        # Delete all itinerary items for this package
+#        cursor.execute("DELETE FROM itinerary WHERE package_id = %s", (package_id,))
+#        deleted_count = cursor.rowcount
+#        logger.info(f"Deleted {deleted_count} itinerary items for package {package_id}")
+#        return deleted_count > 0
 
 # ============ HELPER FUNCTIONS ============
 
@@ -1009,3 +1029,234 @@ def get_table_counts() -> Dict[str, int]:
                 counts[table] = 0
     
     return counts
+
+def insert_package_departure(departure_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Insert a new departure option for a package.
+    """
+    with get_db_connection() as conn:
+        cursor = get_db_cursor(conn)
+        
+        query = """
+            INSERT INTO "CTM".package_departures (
+                package_id, departure_city_id, base_price, 
+                duration_days, start_city, is_active
+            ) VALUES (
+                %(package_id)s, %(departure_city_id)s, %(base_price)s,
+                %(duration_days)s, %(start_city)s, %(is_active)s
+            )
+            RETURNING id, created_at
+        """
+        
+        cursor.execute(query, departure_data)
+        result = cursor.fetchone()
+        logger.info(f"Departure option inserted for package {departure_data['package_id']}")
+        return dict(result)
+
+def update_package_departure(departure_id: int, departure_data: Dict[str, Any]) -> bool:
+    """
+    Update a departure option.
+    """
+    with get_db_connection() as conn:
+        cursor = get_db_cursor(conn)
+        
+        update_fields = []
+        params = {}
+        
+        for field, value in departure_data.items():
+            if value is not None:
+                update_fields.append(f"{field} = %({field})s")
+                params[field] = value
+        
+        if not update_fields:
+            return False
+        
+        params['id'] = departure_id
+        query = f"""
+            UPDATE "CTM".package_departures 
+            SET {', '.join(update_fields)}, updated_at = CURRENT_TIMESTAMP
+            WHERE id = %(id)s
+            RETURNING id
+        """
+        
+        cursor.execute(query, params)
+        result = cursor.fetchone()
+        
+        if result:
+            logger.info(f"Departure option {departure_id} updated")
+            return True
+        return False
+
+def delete_package_departure(departure_id: int) -> bool:
+    """
+    Delete a departure option.
+    """
+    with get_db_connection() as conn:
+        cursor = get_db_cursor(conn)
+        
+        cursor.execute("""SELECT id FROM "CTM".package_departures WHERE id = %s""", (departure_id,))
+        if not cursor.fetchone():
+            return False
+        
+        cursor.execute("""DELETE FROM "CTM".package_departures WHERE id = %s""", (departure_id,))
+        logger.info(f"Departure option {departure_id} deleted")
+        return True
+
+# ============ DEPARTURE ITINERARY OPERATIONS ============
+
+def insert_departure_itinerary(itinerary_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Insert itinerary item for a departure option.
+    """
+    with get_db_connection() as conn:
+        cursor = get_db_cursor(conn)
+        
+        query = """
+            INSERT INTO "CTM".departure_itinerary (
+                package_id,departure_city_id, day_number, title, 
+                description, accommodation, meals, activities
+            ) VALUES (
+                %(package_id)s,%(departure_city_id)s, %(day_number)s, %(title)s,
+                %(description)s, %(accommodation)s, %(meals)s, %(activities)s
+            )
+            RETURNING id, created_at
+        """
+        
+        cursor.execute(query, itinerary_data)
+        result = cursor.fetchone()
+        logger.info(f"Departure itinerary item inserted")
+        return dict(result)
+
+def update_departure_itinerary(itinerary_id: int, itinerary_data: Dict[str, Any]) -> bool:
+    """
+    Update a departure itinerary item.
+    """
+    with get_db_connection() as conn:
+        cursor = get_db_cursor(conn)
+        
+        update_fields = []
+        params = {}
+        
+        for field, value in itinerary_data.items():
+            if value is not None:
+                update_fields.append(f"{field} = %({field})s")
+                params[field] = value
+        
+        if not update_fields:
+            return False
+        
+        params['id'] = itinerary_id
+        query = f"""
+            UPDATE "CTM".departure_itinerary 
+            SET {', '.join(update_fields)}, updated_at = CURRENT_TIMESTAMP
+            WHERE id = %(id)s
+            RETURNING id
+        """
+        
+        cursor.execute(query, params)
+        result = cursor.fetchone()
+        
+        if result:
+            logger.info(f"Departure itinerary item {itinerary_id} updated")
+            return True
+        return False
+
+def delete_departure_itinerary(itinerary_id: int) -> bool:
+    """
+    Delete a departure itinerary item.
+    """
+    with get_db_connection() as conn:
+        cursor = get_db_cursor(conn)
+        
+        cursor.execute("""SELECT id FROM "CTM".departure_itinerary WHERE id = %s""", (itinerary_id,))
+        if not cursor.fetchone():
+            return False
+        
+        cursor.execute("""DELETE FROM "CTM".departure_itinerary WHERE id = %s""", (itinerary_id,))
+        logger.info(f"Departure itinerary item {itinerary_id} deleted")
+        return True
+
+# ============ COMPLETE PACKAGE WITH DEPARTURES ============
+
+def insert_complete_package_with_departures(package_data: dict) -> Dict[str, Any]:
+    """
+    Insert a complete package with multiple departure options.
+    """
+    with get_db_connection() as conn:
+        cursor = get_db_cursor(conn)
+        
+        try:
+            # 1. Insert the main package
+            package_query = """
+                INSERT INTO "CTM".packages (
+                    package_name, description, short_description,
+                    base_price, discount_percent, availability_status
+                ) VALUES (
+                    %(package_name)s, %(description)s, %(short_description)s,
+                    %(base_price)s, %(discount_percent)s, %(availability_status)s
+                )
+                RETURNING package_id
+            """
+            
+            cursor.execute(package_query, package_data['package'])
+            package_id = cursor.fetchone()['package_id']
+            
+            # 2. Insert departure options
+            departures_created = 0
+            if 'departures' in package_data and package_data['departures']:
+                for departure in package_data['departures']:
+                    departure['package_id'] = package_id
+                    cursor.execute("""
+                        INSERT INTO "CTM".package_departures (
+                            package_id, departure_city_id, base_price,
+                            duration_days, start_city, is_active
+                        ) VALUES (
+                            %(package_id)s, %(departure_city_id)s, %(base_price)s,
+                            %(duration_days)s, %(start_city)s, %(is_active)s
+                        )
+                    """, departure)
+                    departures_created += 1
+            
+            return {
+                "package_id": package_id,
+                "departures_created": departures_created,
+                "status": "success"
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to insert complete package with departures: {e}")
+            raise
+
+def insert_city(city_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Insert a new city.
+    """
+    with get_db_connection() as conn:
+        cursor = get_db_cursor(conn)
+        
+        query = """
+            INSERT INTO "CTM".cities 
+            (city_name, state, country, is_departure_city)
+            VALUES (%(city_name)s, %(state)s, %(country)s, %(is_departure_city)s)
+            RETURNING city_id, created_at
+        """
+        
+        cursor.execute(query, city_data)
+        result = cursor.fetchone()
+        logger.info(f"City inserted: {city_data['city_name']}")
+        return dict(result)
+
+def get_departure_cities() -> List[Dict[str, Any]]:
+    """
+    Get all departure cities.
+    """
+    with get_db_connection() as conn:
+        cursor = get_db_cursor(conn)
+        
+        cursor.execute("""
+            SELECT * FROM "CTM".cities 
+            WHERE is_departure_city = true 
+            ORDER BY city_name
+        """)
+        
+        return [dict(city) for city in cursor.fetchall()]
