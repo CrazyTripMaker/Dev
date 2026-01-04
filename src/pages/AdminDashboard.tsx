@@ -10,16 +10,25 @@ import { ItinerariesList } from '../components/itineraryLists';
 import { usePackages } from '../hooks/usePackages';
 import { useCategories } from '../hooks/useCategories';
 import { useItineraries } from '../hooks/useItineraries';
+import { DepartureForm } from '../components/DepartureForm';
+import { useDepartures } from '../hooks/useDepartures';
+import { DeparturesList } from '../components/DepartureList';
 
-type Tab = 'packages' | 'categories' | 'itineraries';
+type Tab = 'packages' | 'categories' | 'itineraries' | 'departures';
 
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('packages');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [activeDeparturePackageId, setActiveDeparturePackageId] =
+  useState<number | null>(null);
+
   const packages = usePackages();
   const categories = useCategories();
   const itineraries = useItineraries();
+  const departures = useDepartures();
+
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
   const handleAddPackage = async (data: any) => {
     setIsSubmitting(true);
@@ -44,6 +53,32 @@ export function AdminDashboard() {
       setIsSubmitting(false);
     }
   };
+
+    const handleAddDeparture = async (data: {
+    package_id: number;
+    departure_city_id: number;
+    base_price: number;
+    duration_days: number;
+    start_city: string;
+    is_active: boolean;
+  }) => {
+    setIsSubmitting(true);
+    try {
+      await fetch(`${API_BASE_URL}/api/departures/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      await departures.fetchByPackage(data.package_id);
+      setActiveDeparturePackageId(data.package_id); // ADD THIS LINE
+
+      alert('Departure created successfully!');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
 
   //const handleAddDestination = async (data: any) => {
   //  setIsSubmitting(true);
@@ -73,6 +108,7 @@ export function AdminDashboard() {
     { id: 'packages', label: 'Packages', icon: <Package className="w-5 h-5" /> },
     { id: 'categories', label: 'Categories', icon: <Tag className="w-5 h-5" /> },
     { id: 'itineraries', label: 'Itineraries', icon: <Calendar className="w-5 h-5" /> },
+    { id: 'departures', label: 'Departures', icon: <MapPin className="w-5 h-5" /> },
   ];
 
   return (
@@ -145,6 +181,21 @@ export function AdminDashboard() {
                   />
                 </div>
               )}
+
+              {activeTab === 'departures' && (
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                    Link Package with Departure
+                  </h2>
+                  <DepartureForm
+                    onSubmit={handleAddDeparture}
+                    isLoading={isSubmitting}
+                    error={departures.error}
+                    onPackageSelect={setActiveDeparturePackageId}
+                  />
+                </div>
+              )}
+
             </div>
 
             <div className="lg:col-span-2">
@@ -182,8 +233,6 @@ export function AdminDashboard() {
                 </div>
               )}
 
-
-
               {activeTab === 'itineraries' && (
                 <div className="bg-white rounded-lg shadow-sm p-6">
                   <div className="flex justify-between items-center mb-4">
@@ -204,6 +253,43 @@ export function AdminDashboard() {
                       isDeleting={false}
                     />
                   )}
+                </div>
+              )}
+
+              {activeTab === 'departures' && (
+                <div className="lg:col-span-2">
+                  <div className="bg-white rounded-lg shadow-sm p-6">
+                    {/* Package selector section - UPDATE THIS */}
+                    <div className="mb-6">
+                      <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                        View Departures by Package
+                      </h2>
+                      <select
+                        value={activeDeparturePackageId || ''}
+                        onChange={(e) => setActiveDeparturePackageId(Number(e.target.value) || null)}
+                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Select a package to view departures...</option>
+                        {packages.packages?.map((pkg) => {
+                          // Use name or package_name, NOT title
+                          const displayName = pkg.package_name || `Package ${pkg.id}`;
+                          return (
+                            <option key={pkg.id} value={pkg.id}>
+                              {displayName}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+                      
+                    <DeparturesList                 
+                      packageId={activeDeparturePackageId}
+                      departures={departures.departures}
+                      loading={departures.loading}
+                      onFetch={departures.fetchByPackage}
+                      onDelete={departures.deleteDeparture}
+                    />
+                  </div>
                 </div>
               )}
             </div>
