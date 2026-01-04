@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status,Depends
 from typing import List
 from models.schemas import (
     PackageCreate,
@@ -7,6 +7,7 @@ from models.schemas import (
     PackageCategoryCreate,
     PackageDestinationCreate
 )
+from sqlalchemy import text
 from database import (
     insert_package,
     update_package,
@@ -15,7 +16,9 @@ from database import (
     link_package_category,
     link_package_destination,
     update_package_status,
-    update_package_featured
+    update_package_featured,
+    get_db_connection,
+    get_db_cursor
 )
 
 router = APIRouter()
@@ -508,3 +511,150 @@ async def get_package(package_id: int):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to retrieve package: {str(e)}"
         )
+
+@router.get("/packages/{package_id}/get_full_package_details")
+def get_full_package_details(package_id: int):
+    query = """
+    -- Get package basic information
+    WITH package_info AS (
+        SELECT
+            p.package_id,
+            p.package_name,
+            p.final_price,
+            p.discount_percent,
+            p.duration_days,
+            p.duration_nights,
+            p.difficulty_level,
+            p.start_location,
+            p.included_services,
+            p.excluded_services,
+            p.short_description,
+            p.description,
+            p.base_price  -- Assuming you have this column
+        FROM "CTM".packages p
+        WHERE p.package_id = %s
+    ),
+    -- Get all departure cities for this package
+    departure_cities AS (
+        SELECT DISTINCT 
+            dc.city_id,
+            dc.city_name,
+            dc.base_price_adjustment,  -- Assuming you have price adjustments per city
+            dc.original_price_adjustment
+        FROM "CTM".departure_itinerary di
+        JOIN "CTM".cities dc ON di.departure_city_id = dc.departure_city_id
+        WHERE di.package_id = %s
+    ),
+    -- Get itinerary for each departure city
+    city_itineraries AS (
+        SELECT
+            di.departure_city_id,
+            json_agg(
+                json_build_object(
+                    'day', CONCAT('Day ', di.day_number),
+                    'title', di.title,
+                    'description', COALESCE(di.description, '')
+                )
+                ORDER BY di.day_number
+            ) AS itinerary
+        FROM "CTM".departure_itinerary di
+        WHERE di.package_id = %s
+        GROUP BY di.departure_city_id
+    ),
+    -- Calculate price for each departure city
+    city_prices AS (
+        SELECT
+            dc.departure_city_id,
+            dc.city_name,
+            -- Calculate final price (package price + adjustment)
+            CASE 
+                WHEN dc.base_price_adjustment IS NOT NULL 
+                THEN p.final_price + dc.base_price_adjustment
+                ELSE p.final_price
+            END AS final_price,
+            -- Calculate original price
+            CASE 
+                WHEN dc.original_price_adjustment IS NOT NULL 
+                THEN p.original_price + dc.original_price_adjustment
+                ELSE p.original_price
+            END AS original_price,
+            -- Calculate discount percentage
+            CASE 
+                WHEN p.original_price > 0 
+                THEN ROUND((1 - (p.final_price / NULLIF(p.original_price, 0))) * 100)
+                ELSE p.discount_percent
+            END AS discount_percent,
+            CONCAT(p.duration_days, ' Days & ', p.duration_nights, ' Nights') AS duration
+        FROM departure_cities dc
+        CROSS JOIN package_info p
+    ),
+    -- Get reviews
+    review_data AS (
+        SELECT
+            ROUND(AVG(r.rating)::numeric, 1) AS avg_rating,
+            COUNT(*) AS review_count
+        FROM "CTM".reviews r
+        WHERE r.package_id = %s AND r.is_approved = TRUE
+    )
+    SELECT
+        -- Package details
+        p.package_id AS id,
+        p.package_name AS title,
+        p.final_price AS base_price,
+        CONCAT(p.discount_percent, '%%') AS discount,
+        CONCAT(p.duration_days, ' Days & ', p.duration_nights, ' Nights') AS duration,
+        'Group' AS type,
+        p.difficulty_level AS difficulty,
+        p.start_location AS destination_city,  -- This is the destination, not departure
+        string_to_array(p.included_services, ',') AS inclusions,
+        string_to_array(p.excluded_services, ',') AS exclusions,
+        p.short_description AS description,
+        p.description AS detailed_description,
+        -- Departure options as JSON array
+        (
+            SELECT json_agg(
+                json_build_object(
+                    'city', cp.city_name,
+                    'price', TO_CHAR(cp.final_price, 'FM999,999'),  -- Formatted price
+                    'duration', cp.duration,
+                    'originalPrice', TO_CHAR(cp.original_price, 'FM999,999'),  -- Formatted original price
+                    'discount', CONCAT(cp.discount_percent, '%% OFF'),
+                    'itinerary', COALESCE(ci.itinerary, '[]'::json)
+                )
+                ORDER BY cp.city_name
+            )
+            FROM city_prices cp
+            LEFT JOIN city_itineraries ci ON cp.departure_city_id = ci.departure_city_id
+        ) AS departure_options,
+        -- Reviews
+        COALESCE(rd.avg_rating, 0) AS rating,
+        COALESCE(rd.review_count, 0) AS reviews
+    FROM package_info p
+    CROSS JOIN review_data rd;
+    """
+
+    with get_db_connection() as conn:
+        cursor = get_db_cursor(conn)
+        cursor.execute(query, (package_id, package_id, package_id, package_id))
+        result = cursor.fetchone()
+
+    if not result:
+        raise HTTPException(status_code=404, detail="Package not found")
+
+    return {
+        "id": result['id'],
+        "title": result['title'],
+        "price": result['base_price'],
+        "discount": result['discount'],
+        "duration": result['duration'],
+        "type": result['type'],
+        "difficulty": result['difficulty'],
+        "departureCity": result['destination_city'],  # This is actually the destination
+        "inclusions": result['inclusions'] or [],
+        "exclusions": result['exclusions'] or [],
+        "description": result['description'],
+        "detailedDescription": result['detailed_description'],
+        "departureOptions": result['departure_options'] or [],
+        "rating": float(result['rating']),
+        "reviews": int(result['reviews'])
+    }
