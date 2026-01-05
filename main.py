@@ -1,9 +1,12 @@
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime, date
 from decimal import Decimal
+import os
 
 app = FastAPI(title="Tour Package Admin API", version="1.0.0")
 
@@ -34,3 +37,18 @@ def read_root():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+FRONTEND_DIR = "D:/Personal project/CrazyTripMaker/project/dist"
+
+if os.path.exists(FRONTEND_DIR):
+    # Serve assets
+    app.mount(
+        "/assets",
+        StaticFiles(directory=os.path.join(FRONTEND_DIR, "assets")),
+        name="assets",
+    )
+
+    # SPA fallback
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
