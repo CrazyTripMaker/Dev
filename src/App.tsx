@@ -5,7 +5,7 @@ import PersonalTours from './pages/PersonalTours';
 import CustomisedTours from './pages/CustomisedTours';
 import Contact from './pages/Contact';
 import TourDetails from './pages/TourDetails';
-import { AdminDashboard } from './pages/AdminDashboard';
+import AdminDashboard  from './pages/AdminDashboard';
 
 function App() {
   return (
