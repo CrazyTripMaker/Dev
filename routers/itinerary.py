@@ -17,10 +17,13 @@ async def create_departure_itinerary_item(
     try:
         from database import get_db_connection
 
+        itinerary_data = itinerary.dict()
+        itinerary_data["package_id"] = package_id
+
         with get_db_connection() as conn:
             cursor = conn.cursor()
 
-            # 1. Fetch package
+            # 1. Validate package
             cursor.execute(
                 'SELECT start_location FROM "CTM".packages WHERE package_id = %s',
                 (package_id,)
@@ -31,29 +34,26 @@ async def create_departure_itinerary_item(
 
             start_location = package["start_location"]
 
-            # 2. Fetch city id
-            cursor.execute(
-                'SELECT city_id FROM "CTM".cities WHERE city_name = %s',
-                (start_location,)
-            )
-            city = cursor.fetchone()
-            if not city:
-                raise HTTPException(404, "Departure city not found")
+            # 2. FIXED CHECK (this is the key)
+            if itinerary_data.get("departure_city_id") is None:
+                cursor.execute(
+                    'SELECT city_id FROM "CTM".cities WHERE city_name = %s',
+                    (start_location,)
+                )
+                city = cursor.fetchone()
+                if not city:
+                    raise HTTPException(404, "Departure city not found")
 
-            departure_city_id = city["city_id"]
+                itinerary_data["departure_city_id"] = city["city_id"]
 
             # 3. Insert itinerary
-            itinerary_data = itinerary.dict()
-            itinerary_data["package_id"] = package_id
-            itinerary_data["departure_city_id"] = departure_city_id
-
             result = insert_departure_itinerary(itinerary_data)
 
             return {
                 "message": "Itinerary item created successfully",
                 "itinerary_id": result["id"],
                 "package_id": package_id,
-                "departure_city_id": departure_city_id,
+                "departure_city_id": itinerary_data["departure_city_id"],
                 "status": "success"
             }
 
