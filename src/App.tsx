@@ -17,7 +17,7 @@ function App() {
         <Route path="/customised-tours" element={<CustomisedTours />} />
         <Route path="/tour-details/:tourId" element={<TourDetails />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin-panel" element={<AdminDashboard />} />
       </Routes>
     </Router>
   );
