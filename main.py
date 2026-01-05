@@ -9,6 +9,7 @@ app = FastAPI(title="Tour Package Admin API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
+    allow_origin_regex="https://.*\\.ngrok-free\\.app",
     allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
