@@ -12,7 +12,7 @@ app = FastAPI(title="Tour Package Admin API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://dev-nfgp.onrender.com"],
+    allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
