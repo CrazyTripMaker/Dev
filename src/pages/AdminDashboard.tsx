@@ -16,7 +16,7 @@ import { DeparturesList } from '../components/DepartureList';
 
 type Tab = 'packages' | 'categories' | 'itineraries' | 'departures';
 
-export function AdminDashboard() {
+export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('packages');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
