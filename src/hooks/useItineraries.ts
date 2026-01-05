@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://18bdb81b392b.ngrok-free.app';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://14afb066cd3b.ngrok-free.app';
 
 export interface ItineraryItem {
   id: string;

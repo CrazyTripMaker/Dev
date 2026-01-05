@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Category } from '../lib/data';
 
-const API_BASE = import.meta.env.VITE_API_URL || "https://18bdb81b392b.ngrok-free.app";
+const API_BASE = import.meta.env.VITE_API_URL || "https://14afb066cd3b.ngrok-free.app";
 
 export function useCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
