@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Category } from '../lib/data';
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_URL || "https://18bdb81b392b.ngrok-free.app";
 
 export function useCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -17,7 +17,13 @@ export function useCategories() {
     setError(null);
 
     try {
-      const res = await fetch(`${API_BASE}/api/categories/list`);
+      const res = await fetch(`${API_BASE}/api/categories/list`,
+                {
+                  headers: {
+                    'ngrok-skip-browser-warning': 'true',
+                  },
+                }
+              );
       if (!res.ok) throw new Error("Failed to fetch categories");
 
       const data = await res.json();
@@ -33,7 +39,8 @@ export function useCategories() {
     try {
       const res = await fetch(`${API_BASE}/api/categories`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json",'ngrok-skip-browser-warning': 'true'
+ },
         body: JSON.stringify(category),
       });
 
@@ -54,7 +61,7 @@ export function useCategories() {
     try {
       const res = await fetch(`${API_BASE}/api/categories/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", 'ngrok-skip-browser-warning': 'true' },
         body: JSON.stringify(updates),
       });
 
@@ -75,6 +82,9 @@ export function useCategories() {
     try {
       const res = await fetch(`${API_BASE}/api/categories/${id}`, {
         method: "DELETE",
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+        },
       });
 
       if (!res.ok) throw new Error("Failed to delete category");

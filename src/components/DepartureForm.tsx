@@ -31,7 +31,7 @@ interface City {
 }
 
 export function DepartureForm({ onSubmit, isLoading, error, onPackageSelect }: Props) {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://18bdb81b392b.ngrok-free.app';
 
   const [packages, setPackages] = useState<PackageDetail[]>([]);
   const [cities, setCities] = useState<City[]>([]);
@@ -56,7 +56,13 @@ export function DepartureForm({ onSubmit, isLoading, error, onPackageSelect }: P
       try {
         setLoadingData(true);
         setPackagesError(null);
-        const res = await fetch(`${API_BASE_URL}/api/packages/list`);
+        const res = await fetch(`${API_BASE_URL}/api/packages/list`,
+                {
+                  headers: {
+                    'ngrok-skip-browser-warning': 'true',
+                  },
+                }
+              );
         
         if (!res.ok) {
           throw new Error(`Failed to fetch packages: ${res.status}`);
@@ -93,7 +99,12 @@ export function DepartureForm({ onSubmit, isLoading, error, onPackageSelect }: P
           packageList.map(async (pkg) => {
             try {
               const r = await fetch(
-                `${API_BASE_URL}/api/packages/${pkg.package_id}`
+                `${API_BASE_URL}/api/packages/${pkg.package_id}`,
+                {
+                  headers: {
+                    'ngrok-skip-browser-warning': 'true',
+                  },
+                }
               );
               
               if (!r.ok) {
@@ -145,8 +156,12 @@ export function DepartureForm({ onSubmit, isLoading, error, onPackageSelect }: P
         setCitiesLoading(true);
         setCitiesError(null);
         
-        const response = await fetch(`${API_BASE_URL}/api/cities/departure`);
-        
+        const response = await fetch(`${API_BASE_URL}/api/cities/departure`, {
+                                      headers: {
+                                        'ngrok-skip-browser-warning': 'true',
+                                      },
+                                    });
+
         if (!response.ok) {
           throw new Error(`Failed to fetch cities: ${response.status}`);
         }

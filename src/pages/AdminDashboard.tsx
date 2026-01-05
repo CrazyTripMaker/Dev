@@ -29,7 +29,7 @@ export default function AdminDashboard() {
   const departures = useDepartures();
   const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://18bdb81b392b.ngrok-free.app';
 
   const handleAddPackage = async (data: any) => {
     setIsSubmitting(true);
@@ -67,7 +67,7 @@ export default function AdminDashboard() {
     try {
       await fetch(`${API_BASE_URL}/api/departures/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
         body: JSON.stringify(data),
       });
 

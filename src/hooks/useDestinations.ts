@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Destination } from '../lib/data';
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_URL || "https://18bdb81b392b.ngrok-free.app";
 
 export function useDestinations() {
   const [destinations, setDestinations] = useState<Destination[]>([]);
@@ -17,7 +17,13 @@ export function useDestinations() {
     setError(null);
 
     try {
-      const res = await fetch(`${API_BASE}/api/destinations/list`);
+      const res = await fetch(`${API_BASE}/api/destinations/list`,
+                {
+                  headers: {
+                    'ngrok-skip-browser-warning': 'true',
+                  },
+                }
+              );
       if (!res.ok) throw new Error("Failed to fetch destinations");
 
       const data = await res.json();
@@ -33,7 +39,7 @@ export function useDestinations() {
     try {
       const res = await fetch(`${API_BASE}/api/destinations`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", 'ngrok-skip-browser-warning': 'true' },
         body: JSON.stringify(destination),
       });
 
@@ -54,7 +60,7 @@ export function useDestinations() {
     try {
       const res = await fetch(`${API_BASE}/api/destinations/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", 'ngrok-skip-browser-warning': 'true' },
         body: JSON.stringify(updates),
       });
 
@@ -77,6 +83,9 @@ export function useDestinations() {
     try {
       const res = await fetch(`${API_BASE}/api/destinations/${id}`, {
         method: "DELETE",
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+        },
       });
 
       if (!res.ok) throw new Error("Failed to delete destination");

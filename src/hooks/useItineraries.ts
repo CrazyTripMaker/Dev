@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://18bdb81b392b.ngrok-free.app';
 
 export interface ItineraryItem {
   id: string;
@@ -41,7 +41,13 @@ export function useItineraries(selectedPackageId?: string) {
       const url = `${API_BASE_URL}/api/itinerary/${targetPackageId}/list`;
       console.log('Fetching itineraries for package:', targetPackageId, 'URL:', url);
 
-      const res = await fetch(url);
+      const res = await fetch(url,
+                {
+                  headers: {
+                    'ngrok-skip-browser-warning': 'true',
+                  },
+                }
+              );
       
       if (res.status === 404) {
         // Package has no itineraries yet
@@ -173,7 +179,7 @@ export function useItineraries(selectedPackageId?: string) {
         `${API_BASE_URL}/api/itinerary/${targetPackageId}/itinerary`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
           body: JSON.stringify(backendPayload),
         }
       );
@@ -209,7 +215,7 @@ export function useItineraries(selectedPackageId?: string) {
 
       const res = await fetch(
         `${API_BASE_URL}/api/itinerary/itinerary/${itineraryId}`,
-        { method: 'DELETE' }
+        { method: 'DELETE', headers: { 'ngrok-skip-browser-warning': 'true' } }
       );
 
       if (!res.ok) {
@@ -285,7 +291,7 @@ export function useItineraries(selectedPackageId?: string) {
         `${API_BASE_URL}/api/itinerary/itinerary/${itineraryId}`,
         {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
           body: JSON.stringify(backendPayload),
         }
       );

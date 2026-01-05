@@ -44,8 +44,14 @@ export function DeparturesList({
       setApiLoading(true);
       setError(null);
       
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-      const response = await fetch(`${API_BASE_URL}/api/departures/package/${id}`);
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://18bdb81b392b.ngrok-free.app';
+      const response = await fetch(`${API_BASE_URL}/api/departures/package/${id}`,
+                {
+                  headers: {
+                    'ngrok-skip-browser-warning': 'true',
+                  },
+                }
+              );
       
       if (!response.ok) {
         throw new Error(`Failed to fetch departures: ${response.status}`);

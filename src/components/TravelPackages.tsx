@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  import.meta.env.VITE_API_BASE_URL || 'https://18bdb81b392b.ngrok-free.app';
 
 interface Package {
   package_id: number;
@@ -25,7 +25,13 @@ export default function TravelPackages() {
   useEffect(() => {
     const fetchPackages = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/packages/list`);
+        const res = await fetch(`${API_BASE_URL}/api/packages/list`,
+                {
+                  headers: {
+                    'ngrok-skip-browser-warning': 'true',
+                  },
+                }
+              );
         const data = await res.json();
         setPackages(data.packages || []);
       } catch (error) {

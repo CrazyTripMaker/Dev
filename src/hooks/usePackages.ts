@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Package } from '../lib/data';
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_URL || "https://18bdb81b392b.ngrok-free.app";
 
 export function usePackages() {
   const [packages, setPackages] = useState<Package[]>([]);
@@ -17,7 +17,13 @@ export function usePackages() {
   setError(null);
 
   try {
-    const res = await fetch(`${API_BASE}/api/packages/list`);
+    const res = await fetch(`${API_BASE}/api/packages/list`,
+                {
+                  headers: {
+                    'ngrok-skip-browser-warning': 'true',
+                  },
+                }
+              );
     if (!res.ok) throw new Error("Failed to fetch packages");
 
     const json = await res.json();
@@ -58,7 +64,7 @@ export function usePackages() {
     try {
       const res = await fetch(`${API_BASE}/api/packages/`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", 'ngrok-skip-browser-warning': 'true' },
         body: JSON.stringify(pkg),
       });
 
@@ -101,7 +107,7 @@ export function usePackages() {
     try {
       const res = await fetch(`${API_BASE}/api/packages/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", 'ngrok-skip-browser-warning': 'true' },
         body: JSON.stringify(updates),
       });
 
@@ -125,6 +131,7 @@ export function usePackages() {
     try {
       const res = await fetch(`${API_BASE}/api/packages/${id}`, {
         method: "DELETE",
+        headers: { 'ngrok-skip-browser-warning': 'true' },
       });
 
       if (!res.ok) throw new Error("Failed to delete package");
