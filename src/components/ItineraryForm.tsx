@@ -1,4 +1,3 @@
-// components/ItineraryForm.tsx - Updated with Departure City
 import { useState, useEffect } from 'react';
 import { Calendar, MapPin, FileText, Navigation } from 'lucide-react';
 
@@ -16,14 +15,23 @@ interface City {
   is_departure_city: boolean;
 }
 
+interface ItineraryItem {
+  id: string;
+  dayNumber: number;
+  title: string;
+  description: string;
+  orderIndex: number;
+}
+
 interface ItineraryFormProps {
   onSubmit: (data: any) => Promise<void>;
   isLoading: boolean;
   error: string | null;
   packages: Package[];
+  onPackageChange: (packageId: number | null) => void;
 }
 
-export function ItineraryForm({ onSubmit, isLoading, error, packages=[] }: ItineraryFormProps) {
+export function ItineraryForm({ onSubmit, isLoading, error, packages=[], onPackageChange,}: ItineraryFormProps) {
   const [formData, setFormData] = useState({
     packageId: '',
     dayNumber: '',
@@ -41,7 +49,12 @@ export function ItineraryForm({ onSubmit, isLoading, error, packages=[] }: Itine
   const [departureCities, setDepartureCities] = useState<City[]>([]);
   const [citiesLoading, setCitiesLoading] = useState(false);
   const [citiesError, setCitiesError] = useState<string | null>(null);
-
+  const [loadingData, setLoadingData] = useState(false);
+  const [packagesError, setPackagesError] = useState<string | null>(null);
+  const [itineraries, setItineraries] = useState<ItineraryItem[]>([]);
+  const [itineraryLoading, setItineraryLoading] = useState(false);
+  const [itineraryError, setItineraryError] = useState<string | null>(null);
+  
   // Fetch cities on component mount
   useEffect(() => {
     const fetchCities = async () => {
@@ -104,9 +117,57 @@ export function ItineraryForm({ onSubmit, isLoading, error, packages=[] }: Itine
     fetchCities();
   }, []);
 
+  /*Fetch Itinerary based on PackageID Selected */
+  useEffect(() => {
+  const fetchItinerariesByPackage = async () => {
+    if (!formData.packageId) {
+      setItineraries([]);
+      return;
+    }
+
+    try {
+      setItineraryLoading(true);
+      setItineraryError(null);
+      setLoadingData(true);
+
+      const API_BASE_URL =
+        import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/itinerary/${formData.packageId}/list`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch itineraries (${response.status})`);
+      }
+
+      const data = await response.json();
+
+      // Normalize response safely
+      const itineraryArray = Array.isArray(data)
+        ? data
+        : data.data || data.itineraries || [];
+
+      setItineraries(itineraryArray);
+    } catch (err) {
+      console.error('Error fetching itineraries:', err);
+      setItineraryError(
+        err instanceof Error ? err.message : 'Failed to load itineraries'
+      );
+    } finally {
+      setItineraryLoading(false);
+      setLoadingData(false)
+    }
+  };
+
+  fetchItinerariesByPackage();
+}, [formData.packageId]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    console.log('Form data before processing:', formData);
+    console.log('Selected departureCityId:', formData.departureCityId);
+    console.log('Available cities:', cities);
     const data = {
       ...formData,
       dayNumber: parseInt(formData.dayNumber),
@@ -116,6 +177,7 @@ export function ItineraryForm({ onSubmit, isLoading, error, packages=[] }: Itine
       departureCityId: formData.departureCityId || undefined // Convert empty string to undefined
     };
 
+    console.log('Data being submitted:', data);
     await onSubmit(data);
     
     if (!error) {
@@ -134,13 +196,22 @@ export function ItineraryForm({ onSubmit, isLoading, error, packages=[] }: Itine
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: value,
     }));
-  };
 
+    
+    if (name === 'packageId') {
+      onPackageChange(value ? Number(value) : null);
+    }
+  };
+  
   const getPackageDisplayName = (pkg: Package) => {
     return pkg.title || pkg.name || `Package ${pkg.id}`;
   };
@@ -169,7 +240,7 @@ export function ItineraryForm({ onSubmit, isLoading, error, packages=[] }: Itine
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Select Package *
+            Select Package 
           </label>
           <select
             name="packageId"
@@ -177,13 +248,22 @@ export function ItineraryForm({ onSubmit, isLoading, error, packages=[] }: Itine
             onChange={handleChange}
             required
             className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            disabled={loadingData}
           >
             <option value="">Select a package</option>
-            {packages.map(pkg => (
+            {loadingData ? (
+              <option value="" disabled>Loading packages...</option>
+            ) : packagesError ? (
+              <option value="" disabled>Error loading packages</option>
+            ) : packages.length > 0 ? (
+              packages.map(pkg => (
               <option key={pkg.id} value={pkg.id}>
                 {getPackageDisplayName(pkg)}
               </option>
-            ))}
+            ))
+          ):(
+            <option value="" disabled>No packages available</option>
+            )}
           </select>
         </div>
 

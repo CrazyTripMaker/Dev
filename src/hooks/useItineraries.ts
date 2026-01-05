@@ -21,7 +21,6 @@ export function useItineraries(selectedPackageId?: string) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasFetched, setHasFetched] = useState(false);
-
   /**
    * GET itineraries for a specific package
    */
@@ -159,17 +158,15 @@ export function useItineraries(selectedPackageId?: string) {
 
       // Handle departure_city_id conversion - ONLY if it has a value
       // Backend expects integer or null, not empty string
-      if (payload.departureCityId && payload.departureCityId.trim() !== '') {
-        const cityId = parseInt(payload.departureCityId, 10);
-        if (!isNaN(cityId)) {
-          backendPayload.departure_city_id = cityId;
-        } else {
-          backendPayload.departure_city_id = null;
-        }
-      } else {
-        backendPayload.departure_city_id = null; // Explicitly set to null
-      }
+      const cityId = Number(payload.departureCityId);
 
+      backendPayload.departure_city_id =
+        Number.isInteger(cityId) && cityId > 0 ? cityId : null;
+
+      console.log(
+        'Final departure_city_id being sent:',
+        backendPayload.departure_city_id
+      );
       console.log('Adding itinerary to package:', targetPackageId, 'Payload:', backendPayload);
 
       const res = await fetch(

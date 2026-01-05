@@ -27,6 +27,7 @@ export function AdminDashboard() {
   const categories = useCategories();
   const itineraries = useItineraries();
   const departures = useDepartures();
+  const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -178,6 +179,7 @@ export function AdminDashboard() {
                     isLoading={isSubmitting}
                     error={itineraries.error}
                     packages={packages.packages}
+                    onPackageChange={setSelectedPackageId} 
                   />
                 </div>
               )}
@@ -247,9 +249,8 @@ export function AdminDashboard() {
                     <p className="text-center text-gray-500">Loading itineraries...</p>
                   ) : (
                     <ItinerariesList
-                      itineraries={itineraries.itineraries}
-                      packages={packages.packages}
-                      onDelete={itineraries.deleteItinerary}
+                      packageId={selectedPackageId ?? undefined}
+                      onDelete={async () => {}}
                       isDeleting={false}
                     />
                   )}

@@ -1,20 +1,5 @@
-// components/ItinerariesList.tsx - Simplified version
-import { Calendar, MapPin, Hotel, Utensils, Activity, Trash2 } from 'lucide-react';
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
-
-interface ItineraryItem {
-  id: string;
-  packageId: string;
-  dayNumber: number;
-  title: string;
-  description: string;
-  location?: string;
-  includedActivities?: string[];
-  meals?: string[];
-  accommodation?: string;
-  orderIndex: number;
-}
+import { Calendar, MapPin, Hotel, Utensils, Activity, Trash2, AlertCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface Package {
   id: string;
@@ -23,154 +8,223 @@ interface Package {
 }
 
 interface ItinerariesListProps {
-  itineraries: ItineraryItem[]; // These are already filtered by the hook
-  packages: Package[];
   onDelete: (id: string) => Promise<void>;
   isDeleting: boolean;
+  packageId?: number;
 }
 
-export function ItinerariesList({ itineraries, packages, onDelete, isDeleting }: ItinerariesListProps) {
+interface ApiItineraryItem {
+  id: number;
+  departure_city_id: number;
+  day_number: number;
+  title: string;
+  description: string;
+  accommodation?: string | null;
+  meals?: string | null;
+  activities?: string | null;
+  package_id: number;
+}
+
+interface ApiResponse {
+  package_id: number;
+  departure_city_id: number;
+  itinerary: ApiItineraryItem[];
+  count: number;
+  status: string;
+}
+
+export function ItinerariesList({ 
+  packageId,
+  onDelete, 
+  isDeleting, 
+}: ItinerariesListProps) {
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
-  const { packageId } = useParams<{ packageId: string }>();
+  const [departureCityId, setDepartureCityId] = useState<number | null>(null);
+  const [itineraryItems, setItineraryItems] = useState<ApiItineraryItem[]>([]);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [apiPackageId, setApiPackageId] = useState<number | null>(null);
   
-  // Find the selected package from packages list
-  const selectedPackage = packages.find(p => p.id === packageId);
-  const packageName = selectedPackage?.title || selectedPackage?.name || 'Selected Package';
+  const fetchItinerary = async (id: number) => {
+      try {
+        setApiLoading(true);
+        setError(null);
+        
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const response = await fetch(`${API_BASE_URL}/api/itinerary/${id}/list`);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch departures: ${response.status}`);
+        }
+        
+        const data: ApiResponse = await response.json();
+        console.log("Data",data)
+        if (data.status === 'success' && Array.isArray(data.itinerary)) {
+          setApiPackageId(data.package_id);
+          setDepartureCityId(data.departure_city_id);
+          setItineraryItems(data.itinerary || []);
+
+        } else {
+          setItineraryItems([]);
+        }
+      } catch (err) {
+        console.error('Error fetching departures:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load departures');
+        setItineraryItems([]);
+      } finally {
+        setApiLoading(false);
+      }
+    };
+    console.log("This is the packageid",packageId)
+    useEffect(() => {
+      if (packageId) {
+        fetchItinerary(packageId);
+      } else {
+        setItineraryItems([]);
+        setApiPackageId(null);
+      }
+    }, [packageId]);
   
-  // Sort by day number
-  const sortedItineraries = [...itineraries].sort((a, b) => a.dayNumber - b.dayNumber);
-
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this itinerary day?')) {
-      await onDelete(id);
-    }
-  };
-
-  if (!Array.isArray(itineraries)) {
-    return <p>No itineraries found</p>;
-  }
-
-  if (itineraries.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-          <Calendar className="w-8 h-8 text-gray-400" />
-        </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          No Itinerary Found for This Package
-        </h3>
-        <p className="text-gray-600 max-w-md mx-auto">
-          {packageId 
-            ? `No itinerary days have been added for ${packageName}.`
-            : 'Select a package to view its itinerary.'}
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      {/* Always show package header when we have packageId */}
-      {packageId && (
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">{packageName}</h2>
-          <p className="text-gray-600">
-            {sortedItineraries.length} day{sortedItineraries.length !== 1 ? 's' : ''} of itinerary
+    const handleDelete = async (departureId: number) => {
+      if (window.confirm('Are you sure you want to delete this departure?')) {
+        try {
+          await onDelete(departureId.toString());
+          // Refresh the list after deletion
+          if (apiPackageId) {
+            fetchItinerary(apiPackageId);
+          }
+        } catch (err) {
+          console.error('Error deleting departure:', err);
+          alert('Failed to delete departure');
+        }
+      }
+    };
+    
+    if (!apiPackageId) {
+      return (
+        <div className="text-center py-8">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+            <Calendar className="w-8 h-8 text-gray-400" />
+          </div>
+          <p className="text-gray-500">
+            Select a package to view itinerary
+          </p>
+          <p className="text-sm text-gray-400 mt-1">
+            Choose a package from the dropdown above
           </p>
         </div>
-      )}
-      
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
-        {!packageId && (
-          <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">All Packages</h3>
-            <p className="text-sm text-gray-600">
-              {sortedItineraries.length} itinerary day{sortedItineraries.length !== 1 ? 's' : ''} across all packages
-            </p>
+      );
+    }
+  
+    if (apiLoading) {
+      return (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3"></div>
+          <p className="text-gray-500">Loading itinerary...</p>
+        </div>
+      );
+    }
+  
+    if (error) {
+      return (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-800">{error}</p>
+          <button
+            onClick={() => apiPackageId && fetchItinerary(apiPackageId)}
+            className="mt-2 text-sm text-red-600 hover:text-red-800"
+          >
+            Try again
+          </button>
+        </div>
+      );
+    }
+  
+    if (itineraryItems.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-50 flex items-center justify-center">
+            <MapPin className="w-8 h-8 text-blue-400" />
           </div>
-        )}
-        
-        <div className="divide-y divide-gray-200">
-          {sortedItineraries.map((itinerary) => (
-            <div key={itinerary.id} className="p-6 hover:bg-gray-50">
-              <div 
-                className="flex items-start justify-between cursor-pointer"
-                onClick={() => setExpandedDay(expandedDay === itinerary.id ? null : itinerary.id)}
-              >
-                <div className="flex items-start space-x-4 flex-1">
-                  <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex flex-col items-center justify-center">
-                    <span className="text-blue-600 font-bold text-sm">Day</span>
-                    <span className="text-blue-800 font-bold text-lg">{itinerary.dayNumber}</span>
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900">{itinerary.title}</h4>
-                    <div className="flex flex-wrap items-center gap-4 mt-1">
-                      {itinerary.location && (
-                        <div className="flex items-center text-sm text-gray-600">
-                          <MapPin className="w-4 h-4 mr-1" />
-                          {itinerary.location}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(itinerary.id);
-                  }}
-                  disabled={isDeleting}
-                  className="p-2 text-gray-400 hover:text-red-600 transition-colors ml-4"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
-              </div>
+          <p className="text-gray-500">
+            No itinerary found for this package
+          </p>
+          <p className="text-sm text-gray-400 mt-1">
+            Create itinerary using the form on the left
+          </p>
+        </div>
+      );
+    }
 
-              {expandedDay === itinerary.id && (
-                <div className="mt-4 pl-16 space-y-4">
-                  <div>
-                    <p className="text-gray-700">{itinerary.description}</p>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {itinerary.accommodation && (
-                      <div className="flex items-center text-sm">
-                        <Hotel className="w-4 h-4 text-gray-500 mr-2" />
-                        <span className="text-gray-700">{itinerary.accommodation}</span>
-                      </div>
-                    )}
-                    
-                    {itinerary.meals && itinerary.meals.length > 0 && (
-                      <div className="flex items-center text-sm">
-                        <Utensils className="w-4 h-4 text-gray-500 mr-2" />
-                        <span className="text-gray-700">{itinerary.meals.join(', ')}</span>
-                      </div>
-                    )}
-                    
-                    {itinerary.includedActivities && itinerary.includedActivities.length > 0 && (
-                      <div className="flex items-center text-sm">
-                        <Activity className="w-4 h-4 text-gray-500 mr-2" />
-                        <span className="text-gray-700">{itinerary.includedActivities.join(', ')}</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex justify-between items-center text-xs text-gray-500 pt-2 border-t border-gray-100">
-                    <div>
-                      Order index: {itinerary.orderIndex}
-                    </div>
-                    {!packageId && (
-                      <div className="text-gray-600">
-                        Package ID: {itinerary.packageId}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
+  return (
+  <div className="space-y-6">
+    {/* Package header */}
+    <div className="mb-6">
+      <div className="flex justify-between items-start">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Itinerary</h2>
+          <p className="text-gray-600">
+            {itineraryItems.length} departure{itineraryItems.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+        <span className="text-xs px-2.5 py-1 bg-blue-100 text-blue-800 rounded-full font-medium">
+          Package ID: {apiPackageId}
+        </span>
+      </div>
+    </div>
+    
+    <div className="border border-gray-200 rounded-lg overflow-hidden">
+      {/* Departure header */}
+  <div
+    className="flex items-start justify-between cursor-pointer"
+    onClick={() => setExpandedDay(expandedDay ? null : 'departure')}
+  >
+    <div className="flex items-start space-x-4">
+      <div className="w-12 h-12 bg-blue-100 rounded-lg flex flex-col items-center justify-center">
+        <span className="text-blue-600 font-bold text-sm">Departure</span>
+        <span className="text-blue-800 font-bold text-lg">1</span>
+      </div>
+
+      <div>
+        <h4 className="font-medium text-gray-900">
+          Departure City ID: {departureCityId}
+        </h4>
+        <div className="text-sm text-gray-600 mt-1">
+          Package ID: {apiPackageId}
         </div>
       </div>
     </div>
-  );
-}
+  </div>
+
+  {/* Itinerary items */}
+  {expandedDay === 'departure' && (
+    <div className="mt-6 pl-16 space-y-4">
+      {itineraryItems.length > 0 ? (
+        itineraryItems
+          .sort((a, b) => a.day_number - b.day_number)
+          .map((item) => (
+            <div key={item.id} className="bg-white p-4 rounded border">
+              <h5 className="font-semibold">
+                Day {item.day_number}: {item.title}
+              </h5>
+              <p className="text-sm text-gray-700 whitespace-pre-line mt-1">
+                {item.description}
+              </p>
+            </div>
+          ))
+      ) : (
+        <p className="text-gray-500">No itinerary details available</p>
+      )}
+    </div>
+      )}
+</div>
+                
+<div className="text-xs text-gray-500 pt-2 border-t border-gray-100">
+  <div className="flex items-center gap-4">
+    <span>Package ID: {apiPackageId}</span>
+    <span>Departure City ID: {departureCityId}</span>
+    <span>Itinerary Items: {itineraryItems.length}</span>
+  </div>
+</div>
+</div>
+)}
+         
