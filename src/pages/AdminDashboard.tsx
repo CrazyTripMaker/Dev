@@ -29,7 +29,7 @@ export default function AdminDashboard() {
   const departures = useDepartures();
   const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://14afb066cd3b.ngrok-free.app';
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
   const handleAddPackage = async (data: any) => {
     setIsSubmitting(true);

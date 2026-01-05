@@ -31,7 +31,7 @@ interface City {
 }
 
 export function DepartureForm({ onSubmit, isLoading, error, onPackageSelect }: Props) {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://14afb066cd3b.ngrok-free.app';
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
   const [packages, setPackages] = useState<PackageDetail[]>([]);
   const [cities, setCities] = useState<City[]>([]);

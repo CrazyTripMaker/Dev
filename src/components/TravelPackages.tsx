@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'https://14afb066cd3b.ngrok-free.app';
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 interface Package {
   package_id: number;

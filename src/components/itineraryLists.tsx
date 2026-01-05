@@ -50,7 +50,7 @@ export function ItinerariesList({
         setApiLoading(true);
         setError(null);
         
-        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://14afb066cd3b.ngrok-free.app';
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
         const response = await fetch(`${API_BASE_URL}/api/itinerary/${id}/list`,
                 {
                   headers: {

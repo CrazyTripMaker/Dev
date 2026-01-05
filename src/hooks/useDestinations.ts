@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Destination } from '../lib/data';
 
-const API_BASE = import.meta.env.VITE_API_URL || "https://14afb066cd3b.ngrok-free.app";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export function useDestinations() {
   const [destinations, setDestinations] = useState<Destination[]>([]);
