@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import GroupTours from './pages/GroupTours';
 import PersonalTours from './pages/PersonalTours';
@@ -18,6 +18,7 @@ function App() {
         <Route path="/tour-details/:tourId" element={<TourDetails />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
