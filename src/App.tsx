@@ -18,7 +18,6 @@ function App() {
         <Route path="/tour-details/:tourId" element={<TourDetails />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
