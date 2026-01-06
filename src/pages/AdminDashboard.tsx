@@ -1,6 +1,6 @@
 // AdminDashboard.tsx
 import { useState } from 'react';
-import { Package, Settings, MapPin, Tag, Calendar } from 'lucide-react';
+import { Package, Settings, MapPin, Tag, Calendar, Building2  } from 'lucide-react';
 import { PackageForm } from '../components/PackageForm';
 import { PackagesList } from '../components/PackagesList';
 import { CategoryForm } from '../components/CategoryForm';
@@ -13,8 +13,11 @@ import { useItineraries } from '../hooks/useItineraries';
 import { DepartureForm } from '../components/DepartureForm';
 import { useDepartures } from '../hooks/useDepartures';
 import { DeparturesList } from '../components/DepartureList';
+import { useDepartureCities } from '../hooks/useDepartureCities';
+import { DepartureCityForm } from '../components/DepartureCityForm';
+import { DepartureCitiesList } from '../components/DepartureCityList';
 
-type Tab = 'packages' | 'categories' | 'itineraries' | 'departures';
+type Tab = 'packages' | 'categories' | 'itineraries' | 'departures' | 'departureCities';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('packages');
@@ -27,6 +30,7 @@ export default function AdminDashboard() {
   const categories = useCategories();
   const itineraries = useItineraries();
   const departures = useDepartures();
+  const departureCities = useDepartureCities();
   const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -110,6 +114,7 @@ export default function AdminDashboard() {
     { id: 'categories', label: 'Categories', icon: <Tag className="w-5 h-5" /> },
     { id: 'itineraries', label: 'Itineraries', icon: <Calendar className="w-5 h-5" /> },
     { id: 'departures', label: 'Departures', icon: <MapPin className="w-5 h-5" /> },
+    { id: 'departureCities', label: 'Departure Cities', icon: <Building2  className="w-5 h-5" /> },
   ];
 
   return (
@@ -194,6 +199,19 @@ export default function AdminDashboard() {
                     isLoading={isSubmitting}
                     error={departures.error}
                     onPackageSelect={setActiveDeparturePackageId}
+                  />
+                </div>
+              )}
+
+              {activeTab === 'departureCities' && (
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <h2 className="text-lg font-semibold mb-4">
+                    Add Departure City
+                  </h2>
+                  <DepartureCityForm
+                    onSubmit={departureCities.addCity}
+                    isLoading={isSubmitting}
+                    error={departureCities.error}
                   />
                 </div>
               )}
@@ -291,6 +309,18 @@ export default function AdminDashboard() {
                       onDelete={departures.deleteDeparture}
                     />
                   </div>
+                </div>
+              )}
+
+              {activeTab === 'departureCities' && (
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <h2 className="text-lg font-semibold mb-4">
+                    Departure Cities ({departureCities.cities.length})
+                  </h2>
+                  <DepartureCitiesList
+                    cities={departureCities.cities}
+                    loading={departureCities.loading}
+                  />
                 </div>
               )}
             </div>
