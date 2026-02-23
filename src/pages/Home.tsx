@@ -2,8 +2,8 @@ import Hero from '../components/Hero';
 import TravelPackages from '../components/TravelPackages';
 import TopCategories from '../components/TopCategories';
 import TopLocations from '../components/TopLocations';
+import OfferAndTestimonials from '../components/Offerandtestimonials';
 import ContactBranch from '../components/ContactBranch';
-import ReviewsSection from '../components/Reviews';
 import Footer from '../components/Footer';
 
 export default function Home() {
@@ -13,8 +13,8 @@ export default function Home() {
       <TravelPackages />
       <TopCategories />
       <TopLocations />
+      <OfferAndTestimonials />
       <ContactBranch />
-      <ReviewsSection />
       <Footer />
     </div>
   );

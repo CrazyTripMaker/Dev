@@ -1,136 +1,62 @@
-// TourDetails.tsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, MapPin, Users, User, Heart, Check, Star, ArrowLeft, Phone, Mail, Globe } from 'lucide-react';
+import { ArrowLeft, Check, Star } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
 const allToursDatabase = [
-  // Group Tours
   {
-    id: "1",
-    title: "Himachal Pocket From Rajkot",
-    price: "12,999",
-    discount: "35%",
-    duration: "9 Days & 8 Nights",
-    type: "Group",
-    category: "Himachal",
-    destinations: ["Shimla", "Manali", "Dalhousie", "Golden Temple"],
-    description: "Experience the breathtaking beauty of Himachal Pradesh with this comprehensive tour package.",
-    detailedDescription: `
-      This 9-day tour takes you through the most beautiful destinations in Himachal Pradesh. 
-      Starting from Rajkot, you'll explore the colonial charm of Shimla, the adventure hub of Manali, 
-      the serene landscapes of Dalhousie, and the spiritual tranquility of the Golden Temple in Amritsar.
-    `,
+    id: '1',
+    title: 'Himachal Pocket From Rajkot',
+    price: '12,999',
+    discount: '35%',
+    duration: '9 Days & 8 Nights',
+    type: 'Group',
+    category: 'Himachal',
+    destinations: ['Shimla', 'Manali', 'Dalhousie', 'Golden Temple'],
+    description: 'Experience the breathtaking beauty of Himachal Pradesh with this comprehensive tour package.',
+    detailedDescription: `This 9-day tour takes you through the most beautiful destinations in Himachal Pradesh. Starting from Rajkot, you'll explore the colonial charm of Shimla, the adventure hub of Manali, the serene landscapes of Dalhousie, and the spiritual tranquility of the Golden Temple in Amritsar.`,
     inclusions: [
-      "Accommodation in 3-star hotels",
-      "Daily breakfast and dinner",
-      "All transfers in AC vehicle",
-      "Sightseeing as per itinerary",
-      "Driver allowances and parking charges",
-      "All applicable taxes"
+      'Accommodation in 3-star hotels',
+      'Daily breakfast and dinner',
+      'All transfers in AC vehicle',
+      'Sightseeing as per itinerary',
+      'Driver allowances and parking charges',
+      'All applicable taxes',
     ],
     exclusions: [
-      "Airfare/train tickets",
-      "Lunch and personal expenses",
-      "Entry tickets to monuments",
-      "Travel insurance",
-      "Tips and porter charges"
+      'Airfare/train tickets',
+      'Lunch and personal expenses',
+      'Entry tickets to monuments',
+      'Travel insurance',
+      'Tips and porter charges',
     ],
     itinerary: [
-      {
-        day: "Day 1",
-        title: "Arrival in Delhi & Transfer to Shimla",
-        description: "Arrive in Delhi, meet our representative and proceed to Shimla. Overnight stay in Shimla."
-      },
-      {
-        day: "Day 2",
-        title: "Shimla Sightseeing",
-        description: "Visit Mall Road, The Ridge, Christ Church, and Jakhoo Temple. Overnight in Shimla."
-      },
-      {
-        day: "Day 3",
-        title: "Shimla to Manali",
-        description: "Travel to Manali via Kullu Valley. Visit Kullu Shawl Factory en route. Overnight in Manali."
-      }
+      { day: 'Day 1', title: 'Arrival in Delhi & Transfer to Shimla', description: 'Arrive in Delhi, meet our representative and proceed to Shimla. Overnight stay in Shimla.' },
+      { day: 'Day 2', title: 'Shimla Sightseeing', description: 'Visit Mall Road, The Ridge, Christ Church, and Jakhoo Temple. Overnight in Shimla.' },
+      { day: 'Day 3', title: 'Shimla to Manali', description: 'Travel to Manali via Kullu Valley. Visit Kullu Shawl Factory en route. Overnight in Manali.' },
     ],
-    // ADDED: Departure options similar to the reference image
     departureOptions: [
-      {
-        city: "Rajkot",
-        price: "12,999",
-        duration: "9 Days & 8 Nights",
-        originalPrice: "19,999",
-        discount: "35% OFF",
-        itinerary: [
-          {
-            day: "Day 0",
-            title: "Departure from Rajkot",
-            description: "Evening departure from Rajkot to Delhi by train/air."
-          },
-          {
-            day: "Day 1",
-            title: "Arrival in Delhi & Transfer to Shimla",
-            description: "Arrive in Delhi, meet our representative and proceed to Shimla. Overnight stay in Shimla."
-          }
-        ]
-      },
-      {
-        city: "Ahmedabad",
-        price: "11,999",
-        duration: "9 Days & 8 Nights",
-        originalPrice: "17,999",
-        discount: "33% OFF",
-        itinerary: [
-          {
-            day: "Day 0",
-            title: "Departure from Ahmedabad",
-            description: "Evening departure from Ahmedabad to Delhi by flight."
-          },
-          {
-            day: "Day 1",
-            title: "Arrival in Delhi & Transfer to Shimla",
-            description: "Arrive in Delhi, meet our representative and proceed to Shimla. Overnight stay in Shimla."
-          }
-        ]
-      },
-      {
-        city: "Mumbai",
-        price: "14,499",
-        duration: "9 Days & 8 Nights",
-        originalPrice: "21,999",
-        discount: "34% OFF",
-        itinerary: [
-          {
-            day: "Day 0",
-            title: "Departure from Mumbai",
-            description: "Morning departure from Mumbai to Delhi by flight."
-          },
-          {
-            day: "Day 1",
-            title: "Arrival in Delhi & Transfer to Shimla",
-            description: "Arrive in Delhi, meet our representative and proceed to Shimla. Overnight stay in Shimla."
-          }
-        ]
-      }
+      { city: 'Rajkot', price: '12,999', duration: '9 Days & 8 Nights', originalPrice: '19,999', discount: '35% OFF' },
+      { city: 'Ahmedabad', price: '11,999', duration: '9 Days & 8 Nights', originalPrice: '17,999', discount: '33% OFF' },
+      { city: 'Mumbai', price: '14,499', duration: '9 Days & 8 Nights', originalPrice: '21,999', discount: '34% OFF' },
     ],
     highlights: [
-      "Stay in premium hotels with mountain views",
-      "Visit Snow Point in Solang Valley",
-      "Experience the scenic Toy Train ride",
-      "Explore local markets and cuisine",
-      "Professional guide services"
+      'Stay in premium hotels with mountain views',
+      'Visit Snow Point in Solang Valley',
+      'Experience the scenic Toy Train ride',
+      'Explore local markets and cuisine',
+      'Professional guide services',
     ],
-    image: "https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&cs=tinysrgb&w=800",
-    tourType: "Group",
+    image: 'https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&cs=tinysrgb&w=800',
+    tourType: 'Group',
     maxGroupSize: 20,
-    difficulty: "Easy",
+    difficulty: 'Easy',
     rating: 4.8,
     reviews: 124,
-    departureCity: "Rajkot",
-    availableDates: ["2024-12-15", "2024-12-22", "2025-01-05"]
+    departureCity: 'Rajkot',
+    availableDates: ['2024-12-15', '2024-12-22', '2025-01-05'],
   },
-  // Add more tours here...
 ];
 
 export default function TourDetails() {
@@ -139,35 +65,30 @@ export default function TourDetails() {
   const [tour, setTour] = useState<any>(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState('overview');
-  // ADDED: State for selected departure
   const [selectedDeparture, setSelectedDeparture] = useState<any>(null);
 
   useEffect(() => {
-    // In real app, fetch from API
-    const foundTour = allToursDatabase.find(t => t.id === tourId);
-    if (foundTour) {
-      setTour(foundTour);
-      // Set first departure option as default
-      if (foundTour.departureOptions && foundTour.departureOptions.length > 0) {
-        setSelectedDeparture(foundTour.departureOptions[0]);
-      }
+    const found = allToursDatabase.find((t) => t.id === tourId);
+    if (found) {
+      setTour(found);
+      if (found.departureOptions?.length) setSelectedDeparture(found.departureOptions[0]);
     }
   }, [tourId]);
 
-  const handleDepartureSelect = (departure: any) => {
-    setSelectedDeparture(departure);
-    // You can also update the main tour price if needed
-    // setTour({...tour, price: departure.price, departureCity: departure.city});
-  };
-
   if (!tour) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#FAF6EF', fontFamily: "'DM Sans', sans-serif" }}>
         <div className="text-center">
-          <h2 className="text-2xl font-semibold text-gray-700">Tour not found</h2>
-          <button 
+          <div style={{ fontSize: '64px', marginBottom: '16px' }}>🗺️</div>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '28px', fontWeight: 700, color: '#1B3A2D', marginBottom: '8px' }}>Tour not found</h2>
+          <p style={{ color: '#7A7265', marginBottom: '24px' }}>The tour you're looking for doesn't exist or has been removed.</p>
+          <button
             onClick={() => navigate(-1)}
-            className="mt-4 px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+            style={{
+              background: '#1B3A2D', color: 'white', border: 'none', cursor: 'pointer',
+              padding: '12px 28px', borderRadius: '12px',
+              fontFamily: "'DM Sans', sans-serif", fontSize: '14px', fontWeight: 600,
+            }}
           >
             Go Back
           </button>
@@ -178,217 +99,205 @@ export default function TourDetails() {
 
   const images = [
     tour.image,
-    "https://images.pexels.com/photos/3408744/pexels-photo-3408744.jpeg?auto=compress&cs=tinysrgb&w=800",
-    "https://images.pexels.com/photos/962464/pexels-photo-962464.jpeg?auto=compress&cs=tinysrgb&w=800",
-    "https://images.pexels.com/photos/3581368/pexels-photo-3581368.jpeg?auto=compress&cs=tinysrgb&w=800"
+    'https://images.pexels.com/photos/3408744/pexels-photo-3408744.jpeg?auto=compress&cs=tinysrgb&w=800',
+    'https://images.pexels.com/photos/962464/pexels-photo-962464.jpeg?auto=compress&cs=tinysrgb&w=800',
+    'https://images.pexels.com/photos/3581368/pexels-photo-3581368.jpeg?auto=compress&cs=tinysrgb&w=800',
   ];
 
-  // Function to get current itinerary based on selected departure
-  const getCurrentItinerary = () => {
-    if (selectedDeparture && selectedDeparture.itinerary) {
-      return [...selectedDeparture.itinerary, ...tour.itinerary.slice(1)];
-    }
-    return tour.itinerary;
-  };
+  const tabs = ['overview', 'itinerary', 'inclusions', 'highlights'];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{ fontFamily: "'DM Sans', sans-serif", background: '#FAF6EF', minHeight: '100vh' }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600&display=swap');
+        .thumb-btn:hover img { transform: scale(1.05); }
+        .thumb-btn img { transition: transform 0.3s; }
+        .tab-btn { transition: all 0.3s; border-bottom: 2px solid transparent; }
+        .tab-btn.active { border-bottom-color: #C9A84C; color: #1B3A2D; }
+        .departure-card { transition: all 0.3s cubic-bezier(0.23,1,0.32,1); cursor: pointer; }
+        .departure-card:hover { transform: translateY(-3px); box-shadow: 0 16px 48px rgba(27,58,45,0.15) !important; }
+        .departure-card.selected { border-color: #1B3A2D !important; background: rgba(27,58,45,0.03) !important; }
+        .book-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(27,58,45,0.4) !important; }
+        .callback-btn:hover { background: rgba(27,58,45,0.05); transform: translateY(-1px); }
+        .review-card { transition: transform 0.3s, box-shadow 0.3s; }
+        .review-card:hover { transform: translateY(-4px); box-shadow: 0 20px 60px rgba(27,58,45,0.1) !important; }
+      `}</style>
+
       <Navbar />
-      
-      {/* Hero Section */}
-      <div className="relative h-96 overflow-hidden">
-        <img
-          src={images[selectedImage]}
-          alt={tour.title}
-          className="w-full h-full object-cover"
+
+      {/* Hero */}
+      <div className="relative overflow-hidden" style={{ height: '500px', marginTop: '0' }}>
+        <img src={images[selectedImage]} alt={tour.title} className="w-full h-full object-cover transition-all duration-700" />
+        <div
+          className="absolute inset-0"
+          style={{ background: 'linear-gradient(to top, rgba(27,58,45,0.85) 0%, rgba(27,58,45,0.1) 60%)' }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent">
-          <div className="absolute bottom-0 left-0 right-0 p-8">
-            <div className="max-w-7xl mx-auto">
-              <button
-                onClick={() => navigate(-1)}
-                className="flex items-center space-x-2 text-white mb-6 hover:text-emerald-200 transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                <span>Back to Tours</span>
-              </button>
-              <h1 className="text-5xl font-bold text-white mb-4">{tour.title}</h1>
-              <div className="flex flex-wrap items-center gap-4 text-white/90">
-                <div className="flex items-center space-x-2">
-                  <MapPin className="w-5 h-5" />
-                  <span>{tour.destinations.join(", ")}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Calendar className="w-5 h-5" />
-                  <span>{selectedDeparture?.duration || tour.duration}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Users className="w-5 h-5" />
-                  <span>Group Size: {tour.maxGroupSize}</span>
-                </div>
-              </div>
+        <div className="absolute bottom-0 left-0 right-0" style={{ padding: '40px 60px' }}>
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 mb-6 transition-all duration-300"
+            style={{
+              background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255,255,255,0.2)', color: 'white',
+              padding: '8px 18px', borderRadius: '50px',
+              fontSize: '13px', fontWeight: 500, cursor: 'pointer',
+              fontFamily: "'DM Sans', sans-serif",
+            }}
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to Tours
+          </button>
+          <div
+            className="inline-flex items-center gap-2 rounded-full mb-4"
+            style={{
+              background: 'rgba(201,168,76,0.15)', border: '1px solid rgba(201,168,76,0.4)',
+              padding: '5px 16px', fontSize: '11px', color: '#E8C97A',
+              letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700,
+            }}
+          >
+            {tour.type} Tour
+          </div>
+          <h1
+            style={{
+              fontFamily: "'Playfair Display', serif",
+              fontSize: 'clamp(28px, 4vw, 52px)', fontWeight: 900,
+              color: 'white', lineHeight: 1.1, letterSpacing: '-1px',
+              marginBottom: '16px',
+            }}
+          >
+            {tour.title}
+          </h1>
+          <div className="flex flex-wrap items-center gap-6" style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px' }}>
+            <span>📍 {tour.destinations.join(', ')}</span>
+            <span>🗓 {selectedDeparture?.duration || tour.duration}</span>
+            <span>👥 Max {tour.maxGroupSize} people</span>
+            <div className="flex items-center gap-1">
+              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+              <span style={{ fontWeight: 700, color: 'white' }}>{tour.rating}</span>
+              <span>({tour.reviews} reviews)</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Image Thumbnails */}
-      <div className="max-w-7xl mx-auto px-4 py-4">
-        <div className="flex space-x-4 overflow-x-auto pb-2">
+      <div style={{ background: '#1B3A2D', padding: '16px 60px' }}>
+        <div className="flex gap-3 overflow-x-auto">
           {images.map((img, idx) => (
             <button
               key={idx}
               onClick={() => setSelectedImage(idx)}
-              className={`flex-shrink-0 w-32 h-20 rounded-lg overflow-hidden border-2 transition-all ${
-                selectedImage === idx ? 'border-emerald-500' : 'border-transparent'
-              }`}
+              className="thumb-btn flex-shrink-0 rounded-xl overflow-hidden transition-all duration-300"
+              style={{
+                width: '100px', height: '64px',
+                border: selectedImage === idx ? '2px solid #C9A84C' : '2px solid transparent',
+                opacity: selectedImage === idx ? 1 : 0.6,
+                cursor: 'pointer', background: 'none', padding: 0,
+              }}
             >
-              <img src={img} alt={`Tour ${idx + 1}`} className="w-full h-full object-cover" />
+              <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover" />
             </button>
           ))}
         </div>
       </div>
-      
-      {/* ADDED: Join Us From Section */}
-      <div className="bg-white py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Join Us From</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {tour.departureOptions?.map((departure: any, index: number) => (
+
+      {/* Departure Options */}
+      <div style={{ background: 'white', padding: '48px 60px' }}>
+        <div className="max-w-7xl mx-auto">
+          <div style={{ fontSize: '11px', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 700, color: '#3D8B5E', marginBottom: '8px' }}>✦ Select Your Starting Point</div>
+          <h2
+            style={{
+              fontFamily: "'Playfair Display', serif",
+              fontSize: '28px', fontWeight: 700, color: '#1B3A2D',
+              letterSpacing: '-0.5px', marginBottom: '28px',
+            }}
+          >
+            Join Us <em style={{ fontStyle: 'italic', color: '#C9A84C' }}>From</em>
+          </h2>
+          <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
+            {tour.departureOptions?.map((dep: any) => (
               <div
-                key={index}
-                className={`border-2 rounded-xl p-4 cursor-pointer transition-all duration-300 ${
-                  selectedDeparture?.city === departure.city
-                    ? 'border-emerald-500 bg-emerald-50'
-                    : 'border-gray-200 hover:border-emerald-300 hover:bg-gray-50'
-                }`}
-                onClick={() => handleDepartureSelect(departure)}
+                key={dep.city}
+                className={`departure-card rounded-2xl p-5 ${selectedDeparture?.city === dep.city ? 'selected' : ''}`}
+                onClick={() => setSelectedDeparture(dep)}
+                style={{
+                  border: selectedDeparture?.city === dep.city ? '2px solid #1B3A2D' : '2px solid #F0EAE0',
+                  background: selectedDeparture?.city === dep.city ? 'rgba(27,58,45,0.03)' : 'white',
+                  boxShadow: '0 4px 16px rgba(27,58,45,0.06)',
+                }}
               >
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold text-lg text-gray-800">{departure.city}</h3>
-                  {selectedDeparture?.city === departure.city && (
-                    <Check className="w-5 h-5 text-emerald-600" />
-                  )}
-                </div>
-                <div className="space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Price</span>
-                    <span className="font-bold text-emerald-600">₹{departure.price}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Duration</span>
-                    <span className="font-medium">{departure.duration}</span>
-                  </div>
-                  {departure.originalPrice && (
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Original Price</span>
-                      <span className="text-sm line-through text-gray-500">₹{departure.originalPrice}</span>
-                    </div>
-                  )}
-                  {departure.discount && (
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Discount</span>
-                      <span className="text-sm font-semibold text-red-600">{departure.discount}</span>
+                <div className="flex justify-between items-start mb-3">
+                  <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#1B3A2D', fontFamily: "'Playfair Display', serif" }}>
+                    {dep.city}
+                  </h3>
+                  {selectedDeparture?.city === dep.city && (
+                    <div style={{ width: '22px', height: '22px', background: '#1B3A2D', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Check className="w-3 h-3 text-white" strokeWidth={3} />
                     </div>
                   )}
                 </div>
+                <div style={{ fontSize: '24px', fontWeight: 700, color: '#1B3A2D', fontFamily: "'Playfair Display', serif", marginBottom: '4px' }}>
+                  ₹{dep.price}
+                </div>
+                <div style={{ fontSize: '12px', color: '#7A7265', marginBottom: '6px' }}>{dep.duration}</div>
+                {dep.originalPrice && (
+                  <div style={{ fontSize: '12px' }}>
+                    <span style={{ textDecoration: 'line-through', color: '#AAA' }}>₹{dep.originalPrice}</span>
+                    <span style={{ marginLeft: '8px', color: '#C9A84C', fontWeight: 700 }}>{dep.discount}</span>
+                  </div>
+                )}
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Left Column - Main Content */}
-          <div className="lg:col-span-2">
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-16 py-16">
+        <div className="grid gap-12" style={{ gridTemplateColumns: '1fr 380px' }}>
+
+          {/* Left */}
+          <div>
             {/* Tabs */}
-            <div className="flex border-b border-gray-200 mb-8">
-              {['overview', 'itinerary', 'inclusions', 'highlights'].map((tab) => (
+            <div className="flex gap-0 mb-10" style={{ borderBottom: '1px solid #E5E0D5' }}>
+              {tabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-6 py-3 font-semibold capitalize transition-colors ${
-                    activeTab === tab
-                      ? 'text-emerald-600 border-b-2 border-emerald-600'
-                      : 'text-gray-600 hover:text-emerald-500'
-                  }`}
+                  className={`tab-btn px-6 py-3 capitalize font-semibold text-sm transition-all cursor-pointer ${activeTab === tab ? 'active' : ''}`}
+                  style={{
+                    background: 'none', border: 'none',
+                    color: activeTab === tab ? '#1B3A2D' : '#7A7265',
+                    borderBottom: `2px solid ${activeTab === tab ? '#C9A84C' : 'transparent'}`,
+                    fontFamily: "'DM Sans', sans-serif",
+                    letterSpacing: '0.3px',
+                  }}
                 >
                   {tab}
                 </button>
               ))}
             </div>
 
-            {/* Tab Content */}
+            {/* Overview */}
             {activeTab === 'overview' && (
-              <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-gray-800">Tour Overview</h3>
-                <p className="text-gray-700 leading-relaxed">{tour.detailedDescription}</p>
-                
-                <div className="bg-white rounded-xl p-6 shadow-sm">
-                  <h4 className="text-lg font-semibold text-gray-800 mb-4">Tour Information</h4>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-                        <Users className="w-5 h-5 text-emerald-600" />
-                      </div>
+              <div>
+                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '26px', fontWeight: 700, color: '#1B3A2D', marginBottom: '16px' }}>Tour Overview</h3>
+                <p style={{ fontSize: '15px', color: '#4A4540', lineHeight: 1.8, fontWeight: 300, marginBottom: '32px' }}>{tour.detailedDescription}</p>
+                <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                  {[
+                    { icon: '👥', label: 'Tour Type', value: `${tour.type} Tour` },
+                    { icon: '🗓', label: 'Duration', value: selectedDeparture?.duration || tour.duration },
+                    { icon: '⚡', label: 'Difficulty', value: tour.difficulty },
+                    { icon: '📍', label: 'Departure From', value: selectedDeparture?.city || tour.departureCity },
+                  ].map(({ icon, label, value }) => (
+                    <div
+                      key={label}
+                      className="flex items-center gap-4 bg-white rounded-2xl"
+                      style={{ padding: '20px', boxShadow: '0 4px 16px rgba(27,58,45,0.07)' }}
+                    >
+                      <div style={{ width: '48px', height: '48px', background: 'rgba(27,58,45,0.06)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 }}>{icon}</div>
                       <div>
-                        <p className="text-sm text-gray-600">Tour Type</p>
-                        <p className="font-semibold">{tour.type} Tour</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-                        <Calendar className="w-5 h-5 text-emerald-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Duration</p>
-                        <p className="font-semibold">{selectedDeparture?.duration || tour.duration}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-                        <Star className="w-5 h-5 text-emerald-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Difficulty</p>
-                        <p className="font-semibold">{tour.difficulty}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-                        <MapPin className="w-5 h-5 text-emerald-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Departure From</p>
-                        <p className="font-semibold">{selectedDeparture?.city || tour.departureCity}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'itinerary' && (
-              <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-gray-800">Detailed Itinerary</h3>
-                <div className="mb-4 p-4 bg-emerald-50 rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="w-5 h-5 text-emerald-600" />
-                    <span className="font-medium">Departure from: {selectedDeparture?.city || tour.departureCity}</span>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  {getCurrentItinerary().map((day: any, idx: number) => (
-                    <div key={idx} className="bg-white rounded-xl p-6 shadow-sm">
-                      <div className="flex items-start space-x-4">
-                        <div className="w-16 h-16 bg-emerald-100 rounded-xl flex flex-col items-center justify-center">
-                          <span className="text-emerald-600 font-bold">{day.day}</span>
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="text-lg font-semibold text-gray-800 mb-2">{day.title}</h4>
-                          <p className="text-gray-700">{day.description}</p>
-                        </div>
+                        <div style={{ fontSize: '12px', color: '#7A7265', marginBottom: '4px' }}>{label}</div>
+                        <div style={{ fontSize: '15px', fontWeight: 700, color: '#1B3A2D' }}>{value}</div>
                       </div>
                     </div>
                   ))}
@@ -396,48 +305,88 @@ export default function TourDetails() {
               </div>
             )}
 
+            {/* Itinerary */}
+            {activeTab === 'itinerary' && (
+              <div>
+                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '26px', fontWeight: 700, color: '#1B3A2D', marginBottom: '8px' }}>Detailed Itinerary</h3>
+                <p style={{ fontSize: '14px', color: '#7A7265', marginBottom: '28px' }}>Departing from <strong style={{ color: '#1B3A2D' }}>{selectedDeparture?.city || tour.departureCity}</strong></p>
+                <div className="flex flex-col gap-4">
+                  {tour.itinerary.map((day: any, idx: number) => (
+                    <div
+                      key={idx}
+                      className="flex gap-5 bg-white rounded-2xl"
+                      style={{ padding: '24px', boxShadow: '0 4px 16px rgba(27,58,45,0.07)' }}
+                    >
+                      <div
+                        style={{
+                          minWidth: '64px', height: '64px',
+                          background: 'linear-gradient(135deg, #1B3A2D, #3D8B5E)',
+                          borderRadius: '16px',
+                          display: 'flex', flexDirection: 'column',
+                          alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >
+                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)', letterSpacing: '1px', textTransform: 'uppercase' }}>Day</span>
+                        <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '20px', fontWeight: 700, color: '#E8C97A', lineHeight: 1 }}>
+                          {day.day.replace('Day ', '')}
+                        </span>
+                      </div>
+                      <div>
+                        <h4 style={{ fontSize: '16px', fontWeight: 700, color: '#1B3A2D', marginBottom: '8px' }}>{day.title}</h4>
+                        <p style={{ fontSize: '14px', color: '#7A7265', lineHeight: 1.7 }}>{day.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Inclusions */}
             {activeTab === 'inclusions' && (
-              <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-gray-800">What's Included</h3>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="bg-white rounded-xl p-6 shadow-sm">
-                    <h4 className="text-lg font-semibold text-emerald-600 mb-4">Inclusions</h4>
-                    <ul className="space-y-3">
+              <div>
+                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '26px', fontWeight: 700, color: '#1B3A2D', marginBottom: '24px' }}>What's Included</h3>
+                <div className="grid gap-6" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                  <div className="bg-white rounded-2xl p-6" style={{ boxShadow: '0 4px 16px rgba(27,58,45,0.07)' }}>
+                    <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#3D8B5E', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '16px' }}>✅ Inclusions</h4>
+                    <div className="flex flex-col gap-3">
                       {tour.inclusions.map((item: string, idx: number) => (
-                        <li key={idx} className="flex items-center space-x-3">
-                          <Check className="w-5 h-5 text-emerald-500" />
-                          <span>{item}</span>
-                        </li>
+                        <div key={idx} className="flex items-start gap-3">
+                          <div style={{ width: '20px', height: '20px', background: 'rgba(61,139,94,0.12)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px' }}>
+                            <Check className="w-3 h-3" style={{ color: '#3D8B5E' }} strokeWidth={3} />
+                          </div>
+                          <span style={{ fontSize: '14px', color: '#4A4540', lineHeight: 1.5 }}>{item}</span>
+                        </div>
                       ))}
-                    </ul>
+                    </div>
                   </div>
-                  <div className="bg-white rounded-xl p-6 shadow-sm">
-                    <h4 className="text-lg font-semibold text-red-600 mb-4">Exclusions</h4>
-                    <ul className="space-y-3">
+                  <div className="bg-white rounded-2xl p-6" style={{ boxShadow: '0 4px 16px rgba(27,58,45,0.07)' }}>
+                    <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#E05C5C', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '16px' }}>❌ Exclusions</h4>
+                    <div className="flex flex-col gap-3">
                       {tour.exclusions.map((item: string, idx: number) => (
-                        <li key={idx} className="flex items-center space-x-3">
-                          <div className="w-5 h-5 flex items-center justify-center text-red-500">×</div>
-                          <span>{item}</span>
-                        </li>
+                        <div key={idx} className="flex items-start gap-3">
+                          <div style={{ width: '20px', height: '20px', background: 'rgba(224,92,92,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '1px', fontSize: '12px', color: '#E05C5C', fontWeight: 700 }}>×</div>
+                          <span style={{ fontSize: '14px', color: '#4A4540', lineHeight: 1.5 }}>{item}</span>
+                        </div>
                       ))}
-                    </ul>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
+            {/* Highlights */}
             {activeTab === 'highlights' && (
-              <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-gray-800">Tour Highlights</h3>
-                <div className="grid md:grid-cols-2 gap-6">
-                  {tour.highlights.map((highlight: string, idx: number) => (
-                    <div key={idx} className="bg-white rounded-xl p-6 shadow-sm">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-                          <Star className="w-5 h-5 text-emerald-600" />
-                        </div>
-                        <span className="font-medium text-gray-800">{highlight}</span>
-                      </div>
+              <div>
+                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '26px', fontWeight: 700, color: '#1B3A2D', marginBottom: '24px' }}>Tour Highlights</h3>
+                <div className="grid gap-4" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                  {tour.highlights.map((h: string, idx: number) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-4 bg-white rounded-2xl"
+                      style={{ padding: '20px', boxShadow: '0 4px 16px rgba(27,58,45,0.07)' }}
+                    >
+                      <div style={{ width: '40px', height: '40px', background: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '18px' }}>⭐</div>
+                      <span style={{ fontSize: '14px', fontWeight: 500, color: '#1B3A2D' }}>{h}</span>
                     </div>
                   ))}
                 </div>
@@ -445,135 +394,180 @@ export default function TourDetails() {
             )}
           </div>
 
-          {/* Right Column - Booking Card */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-24 bg-white rounded-2xl shadow-xl p-6">
-              <div className="mb-6">
+          {/* Right: Booking */}
+          <div>
+            <div
+              className="sticky bg-white rounded-3xl"
+              style={{ top: '100px', padding: '32px', boxShadow: '0 12px 48px rgba(27,58,45,0.14)' }}
+            >
+              <div style={{ marginBottom: '24px' }}>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600">Starting From</span>
-                  <span className="text-sm bg-red-100 text-red-600 px-3 py-1 rounded-full font-semibold">
+                  <span style={{ fontSize: '12px', color: '#7A7265' }}>Starting From</span>
+                  <span
+                    style={{
+                      background: 'rgba(201,168,76,0.12)', color: '#C9A84C',
+                      border: '1px solid rgba(201,168,76,0.3)',
+                      padding: '3px 10px', borderRadius: '50px',
+                      fontSize: '12px', fontWeight: 700,
+                    }}
+                  >
                     {tour.discount} OFF
                   </span>
                 </div>
-                <div className="flex items-baseline">
-                  <span className="text-4xl font-bold text-emerald-600">₹ {selectedDeparture?.price || tour.price}</span>
-                  <span className="text-gray-500 ml-2">/ person</span>
+                <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '40px', fontWeight: 900, color: '#1B3A2D', lineHeight: 1 }}>
+                  ₹{selectedDeparture?.price || tour.price}
+                  <span style={{ fontSize: '16px', fontWeight: 400, color: '#7A7265', fontFamily: "'DM Sans', sans-serif" }}> /person</span>
                 </div>
-                <p className="text-gray-500 text-sm mt-1">+ ₹ 3,999 taxes & fees</p>
                 {selectedDeparture?.originalPrice && (
-                  <p className="text-gray-400 text-sm">
-                    <span className="line-through">₹{selectedDeparture.originalPrice}</span>
-                    <span className="ml-2 text-red-600 font-medium">{selectedDeparture.discount}</span>
+                  <p style={{ fontSize: '13px', color: '#AAA', marginTop: '4px' }}>
+                    <span style={{ textDecoration: 'line-through' }}>₹{selectedDeparture.originalPrice}</span>
+                    <span style={{ marginLeft: '8px', color: '#C9A84C', fontWeight: 700 }}>{selectedDeparture.discount}</span>
                   </p>
                 )}
               </div>
 
-              <div className="space-y-4 mb-8">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Select Departure Date
-                  </label>
-                  <select className="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-emerald-500 focus:outline-none">
+              <div style={{ borderTop: '1px solid #F0EAE0', paddingTop: '24px', marginBottom: '24px' }}>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#1B3A2D', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '8px' }}>Select Departure Date</label>
+                  <select
+                    style={{
+                      width: '100%', padding: '12px 14px',
+                      border: '1.5px solid #E5E0D5', borderRadius: '12px',
+                      fontSize: '14px', color: '#1A1A1A', background: 'white', outline: 'none',
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}
+                  >
                     {tour.availableDates.map((date: string) => (
                       <option key={date} value={date}>
-                        {new Date(date).toLocaleDateString('en-IN', {
-                          weekday: 'short',
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        })}
+                        {new Date(date).toLocaleDateString('en-IN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Number of Travelers
-                  </label>
-                  <div className="flex items-center space-x-2">
-                    <button className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                      -
-                    </button>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#1B3A2D', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '8px' }}>Number of Travellers</label>
+                  <div className="flex items-center gap-2">
+                    <button style={{ width: '40px', height: '40px', background: '#F5F0E8', border: 'none', borderRadius: '10px', fontSize: '18px', cursor: 'pointer', color: '#1B3A2D', fontWeight: 700 }}>−</button>
                     <input
-                      type="number"
-                      defaultValue="2"
-                      min="1"
-                      max={tour.maxGroupSize}
-                      className="flex-1 p-3 border-2 border-gray-200 rounded-lg text-center focus:border-emerald-500 focus:outline-none"
+                      type="number" defaultValue={2} min={1} max={tour.maxGroupSize}
+                      style={{
+                        flex: 1, padding: '10px', border: '1.5px solid #E5E0D5',
+                        borderRadius: '10px', textAlign: 'center',
+                        fontSize: '16px', fontWeight: 700, color: '#1B3A2D',
+                        fontFamily: "'DM Sans', sans-serif", outline: 'none',
+                      }}
                     />
-                    <button className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                      +
-                    </button>
+                    <button style={{ width: '40px', height: '40px', background: '#F5F0E8', border: 'none', borderRadius: '10px', fontSize: '18px', cursor: 'pointer', color: '#1B3A2D', fontWeight: 700 }}>+</button>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <button className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  Book Now
+              <div className="flex flex-col gap-3">
+                <button
+                  className="book-btn w-full rounded-2xl transition-all duration-300"
+                  style={{
+                    background: 'linear-gradient(135deg, #1B3A2D 0%, #3D8B5E 100%)',
+                    color: 'white', border: 'none', cursor: 'pointer',
+                    padding: '16px', fontFamily: "'DM Sans', sans-serif",
+                    fontSize: '15px', fontWeight: 700,
+                    boxShadow: '0 6px 24px rgba(27,58,45,0.3)',
+                  }}
+                >
+                  🎒 Book Now
                 </button>
-                <button className="w-full py-4 border-2 border-emerald-600 text-emerald-600 font-bold rounded-xl hover:bg-emerald-50 transition-colors">
-                  Request Callback
+                <button
+                  className="callback-btn w-full rounded-2xl transition-all duration-300"
+                  style={{
+                    background: 'transparent',
+                    color: '#1B3A2D', border: '2px solid #1B3A2D', cursor: 'pointer',
+                    padding: '15px', fontFamily: "'DM Sans', sans-serif",
+                    fontSize: '15px', fontWeight: 700,
+                  }}
+                >
+                  📞 Request Callback
                 </button>
               </div>
 
-              <div className="mt-8 pt-8 border-t border-gray-200">
-                <h4 className="font-semibold text-gray-800 mb-4">Need Help?</h4>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3 text-gray-600">
-                    <Phone className="w-5 h-5" />
-                    <span>+91 98765 43210</span>
-                  </div>
-                  <div className="flex items-center space-x-3 text-gray-600">
-                    <Mail className="w-5 h-5" />
-                    <span>info@traveltours.com</span>
-                  </div>
-                  <div className="flex items-center space-x-3 text-gray-600">
-                    <Globe className="w-5 h-5" />
-                    <span>www.traveltours.com</span>
-                  </div>
+              <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid #F0EAE0' }}>
+                <h4 style={{ fontSize: '13px', fontWeight: 700, color: '#1B3A2D', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '12px' }}>Need Help?</h4>
+                <div className="flex flex-col gap-2">
+                  <span style={{ fontSize: '13px', color: '#7A7265' }}>📞 +91-9573623034</span>
+                  <span style={{ fontSize: '13px', color: '#7A7265' }}>✉️ info@CrazyTripMakers.com</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Reviews Section */}
-        <div className="mt-16">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-2xl font-bold text-gray-800">Customer Reviews</h3>
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                ))}
+        {/* Reviews */}
+        <div style={{ marginTop: '80px' }}>
+          <div className="flex items-center justify-between" style={{ marginBottom: '36px' }}>
+            <div>
+              <div style={{ fontSize: '11px', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 700, color: '#3D8B5E', marginBottom: '8px' }}>✦ What Travellers Say</div>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '32px', fontWeight: 700, color: '#1B3A2D', letterSpacing: '-0.5px' }}>
+                Customer <em style={{ fontStyle: 'italic', color: '#C9A84C' }}>Reviews</em>
+              </h3>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex">
+                {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />)}
               </div>
-              <span className="text-lg font-semibold">{tour.rating}/5</span>
-              <span className="text-gray-600">({tour.reviews} reviews)</span>
+              <span style={{ fontSize: '20px', fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#1B3A2D' }}>{tour.rating}/5</span>
+              <span style={{ fontSize: '14px', color: '#7A7265' }}>({tour.reviews} reviews)</span>
             </div>
           </div>
-          
-          <div className="grid md:grid-cols-3 gap-6">
-            {[1, 2, 3].map((_, idx) => (
-              <div key={idx} className="bg-white rounded-xl p-6 shadow-sm">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
+
+          <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+            {[
+              { name: 'Rahul Sharma', loc: 'Mumbai, Maharashtra', text: 'Amazing experience! Everything was perfectly organized. The guides were knowledgeable and the hotels were great. Would 100% book again with CrazyTripMakers!' },
+              { name: 'Priya Patel', loc: 'Ahmedabad, Gujarat', text: 'The Himachal tour was breathtaking. Every detail was taken care of. The group was friendly and the itinerary was perfectly paced. Highly recommended!' },
+              { name: 'Anita Desai', loc: 'Hyderabad, Telangana', text: 'Flawless execution from start to finish. Our family had the time of our lives. The team was responsive and went above and beyond to make us comfortable.' },
+            ].map(({ name, loc, text }) => (
+              <div
+                key={name}
+                className="review-card bg-white rounded-2xl p-7"
+                style={{ boxShadow: '0 4px 20px rgba(27,58,45,0.08)' }}
+              >
+                <div style={{ fontFamily: "'Playfair Display', serif", fontSize: '48px', color: '#C9A84C', opacity: 0.3, lineHeight: 0.5, marginBottom: '12px' }}>"</div>
+                <div className="flex mb-3">
+                  {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
+                </div>
+                <p style={{ fontSize: '15px', color: '#4A4540', lineHeight: 1.7, fontStyle: 'italic', fontFamily: "'Playfair Display', serif", marginBottom: '20px' }}>{text}</p>
+                <div className="flex items-center gap-3">
+                  <div style={{ width: '42px', height: '42px', background: 'linear-gradient(135deg, #1B3A2D, #3D8B5E)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Playfair Display', serif", fontSize: '16px', fontWeight: 700, color: '#C9A84C' }}>
+                    {name[0]}
+                  </div>
                   <div>
-                    <p className="font-semibold">Rahul Sharma</p>
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      ))}
-                    </div>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#1B3A2D' }}>{name}</div>
+                    <div style={{ fontSize: '12px', color: '#7A7265' }}>{loc}</div>
                   </div>
                 </div>
-                <p className="text-gray-700">Amazing experience! Everything was perfectly organized. The guides were knowledgeable and hotels were great.</p>
               </div>
             ))}
           </div>
         </div>
       </div>
+
+      {/* WhatsApp Float */}
+      <a
+        href="https://wa.me/919773335623"
+        target="_blank"
+        rel="noreferrer"
+        style={{
+          position: 'fixed', bottom: '32px', right: '32px',
+          width: '56px', height: '56px',
+          background: '#25D366', borderRadius: '50%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '26px', textDecoration: 'none',
+          boxShadow: '0 8px 32px rgba(37,211,102,0.4)',
+          zIndex: 900,
+          animation: 'float 3s ease-in-out infinite',
+        }}
+        title="Chat on WhatsApp"
+      >
+        💬
+      </a>
 
       <Footer />
     </div>

@@ -1,124 +1,132 @@
-import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300">
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid md:grid-cols-4 gap-8 mb-8">
-          <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">CTM</span>
-              </div>
-              <span className="text-xl font-bold text-white">
-                CrazyTripMakers
-              </span>
+    <footer
+      style={{
+        background: '#1A1A1A',
+        padding: '80px 60px 32px',
+        fontFamily: "'DM Sans', sans-serif",
+      }}
+    >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500&display=swap');
+        .footer-link { text-decoration: none; font-size: 14px; color: rgba(255,255,255,0.45); font-weight: 300; transition: color 0.3s; }
+        .footer-link:hover { color: #C9A84C; }
+        .social-btn { width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 14px; color: rgba(255,255,255,0.5); transition: all 0.3s; cursor: pointer; }
+        .social-btn:hover { background: #C9A84C; color: #1B3A2D; border-color: #C9A84C; transform: translateY(-2px); }
+        .legal-link { text-decoration: none; font-size: 13px; color: rgba(255,255,255,0.25); font-weight: 300; transition: color 0.3s; }
+        .legal-link:hover { color: rgba(255,255,255,0.6); }
+      `}</style>
+
+      {/* Top Grid */}
+      <div
+        className="grid gap-16 mb-16"
+        style={{ gridTemplateColumns: '1.5fr 1fr 1fr 1fr' }}
+      >
+        {/* Brand */}
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <div
+              className="w-11 h-11 rounded-xl flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #1B3A2D 0%, #3D8B5E 100%)', boxShadow: '0 4px 20px rgba(27,58,45,0.3)' }}
+            >
+              <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '15px', fontWeight: 700, color: '#C9A84C' }}>CTM</span>
             </div>
-            <p className="text-gray-400 text-sm leading-relaxed">
-              Your trusted travel partner for unforgettable journeys across India.
-              Creating memories one trip at a time.
-            </p>
+            <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '20px', fontWeight: 700, color: 'white', letterSpacing: '-0.3px' }}>
+              Crazy<span style={{ color: '#C9A84C' }}>Trip</span>Makers
+            </span>
           </div>
-
-          <div>
-            <h3 className="text-white font-bold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-            <li>
-              <Link 
-                to="/about-us" 
-                className="text-gray-400 hover:text-emerald-500 transition-colors"
-              >
-                About Us
-              </Link>
-            </li>
-
-            <li>
-              <Link 
-                to="/our-branches" 
-                className="text-gray-400 hover:text-emerald-500 transition-colors"
-              >
-                Our Branches
-              </Link>
-            </li>
-
-            <li>
-              <Link 
-                to="/group-tours" 
-                className="text-gray-400 hover:text-emerald-500 transition-colors"
-              >
-                Group Tours
-              </Link>
-            </li>
-
-            <li>
-              <Link 
-                to="/personal-tours" 
-                className="text-gray-400 hover:text-emerald-500 transition-colors"
-              >
-                Personal Tours
-              </Link>
-            </li>
-
-            <li>
-              <Link 
-                to="/customised-tours" 
-                className="text-gray-400 hover:text-emerald-500 transition-colors"
-              >
-                Customised Tours
-              </Link>
-            </li>
-          </ul>
-          </div>
-
-          <div>
-            <h3 className="text-white font-bold mb-4">Popular Destinations</h3>
-            <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-emerald-500 transition-colors">Himachal Pradesh</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-emerald-500 transition-colors">Kashmir</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-emerald-500 transition-colors">Kerala</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-emerald-500 transition-colors">Rajasthan</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-white font-bold mb-4">Contact Info</h3>
-            <ul className="space-y-3">
-              <li className="flex items-center space-x-2">
-                <Phone className="w-4 h-4 text-emerald-500" />
-                <span className="text-sm">+91-9573623034,+91-9974542678 </span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <Mail className="w-4 h-4 text-emerald-500" />
-                <span className="text-sm">info@CrazyTripMakers.com</span>
-              </li>
-              <li className="flex items-start space-x-2">
-                <MapPin className="w-4 h-4 text-emerald-500 mt-1 flex-shrink-0" />
-                <span className="text-sm">Hyderabad, Ahmedabad</span>
-              </li>
-            </ul>
+          <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.7, fontWeight: 300, maxWidth: '260px', marginTop: '16px' }}>
+            Your trusted travel partner for unforgettable journeys across India. Creating memories, one trip at a time since 2017.
+          </p>
+          <div className="flex gap-3 mt-6">
+            {['f', '𝕏', 'in', '▶'].map((icon) => (
+              <a key={icon} href="#" className="social-btn">{icon}</a>
+            ))}
           </div>
         </div>
 
-        <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm mb-4 md:mb-0">
-            © 2025 CrazyTripMakers. All rights reserved.
-          </p>
+        {/* Tours */}
+        <div>
+          <h4
+            style={{
+              fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase',
+              fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: '20px',
+            }}
+          >
+            Tours
+          </h4>
+          <ul className="flex flex-col gap-3 list-none m-0 p-0">
+            {[
+              { to: '/group-tours', label: 'Group Tours' },
+              { to: '/personal-tours', label: 'Personal Tours' },
+              { to: '/customised-tours', label: 'Customised Tours' },
+            ].map(({ to, label }) => (
+              <li key={to}><Link to={to} className="footer-link">{label}</Link></li>
+            ))}
+          </ul>
+        </div>
 
-          <div className="flex space-x-4">
-            <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-emerald-600 transition-colors">
-              <Facebook className="w-5 h-5" />
-            </a>
-            <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-emerald-600 transition-colors">
-              <Twitter className="w-5 h-5" />
-            </a>
-            <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-emerald-600 transition-colors">
-              <Instagram className="w-5 h-5" />
-            </a>
-            <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-emerald-600 transition-colors">
-              <Linkedin className="w-5 h-5" />
-            </a>
-          </div>
+        {/* Destinations */}
+        <div>
+          <h4
+            style={{
+              fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase',
+              fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: '20px',
+            }}
+          >
+            Destinations
+          </h4>
+          <ul className="flex flex-col gap-3 list-none m-0 p-0">
+            {['Himachal Pradesh', 'Kashmir', 'Kerala', 'Rajasthan', 'Uttarakhand'].map((d) => (
+              <li key={d}><a href="#" className="footer-link">{d}</a></li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Company */}
+        <div>
+          <h4
+            style={{
+              fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase',
+              fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: '20px',
+            }}
+          >
+            Company
+          </h4>
+          <ul className="flex flex-col gap-3 list-none m-0 p-0">
+            {[
+              { to: '/about-us', label: 'About Us' },
+              { to: '/our-branches', label: 'Our Branches' },
+              { to: '/contact', label: 'Contact Us' },
+            ].map(({ to, label }) => (
+              <li key={to}><Link to={to} className="footer-link">{label}</Link></li>
+            ))}
+            <li>
+              <div style={{ marginTop: '16px' }}>
+                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', marginBottom: '6px' }}>📞 +91-9573623034</div>
+                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', marginBottom: '6px' }}>📞 +91-9974542678</div>
+                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>✉️ info@CrazyTripMakers.com</div>
+                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', marginTop: '6px' }}>📍 Hyderabad & Ahmedabad</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      {/* Bottom */}
+      <div
+        className="flex justify-between items-center"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '28px' }}
+      >
+        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.25)', fontWeight: 300 }}>
+          © 2025 <span style={{ color: '#C9A84C' }}>CrazyTripMakers</span>. All rights reserved. Made with ❤️ in India.
+        </p>
+        <div className="flex gap-6">
+          {['Privacy Policy', 'Terms of Service', 'Refund Policy'].map((l) => (
+            <a key={l} href="#" className="legal-link">{l}</a>
+          ))}
         </div>
       </div>
     </footer>

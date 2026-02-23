@@ -1,51 +1,127 @@
-import { Users } from 'lucide-react';
-
 const locations = [
-  { name: "Uttarakhand", visitors: "60k", image: "https://images.pexels.com/photos/3844790/pexels-photo-3844790.jpeg?auto=compress&cs=tinysrgb&w=600" },
-  { name: "Meghalaya", visitors: "9k", image: "https://images.pexels.com/photos/2404843/pexels-photo-2404843.jpeg?auto=compress&cs=tinysrgb&w=600" },
-  { name: "Uttar Pradesh", visitors: "10k", image: "https://images.pexels.com/photos/3881104/pexels-photo-3881104.jpeg?auto=compress&cs=tinysrgb&w=600" },
-  { name: "Rajasthan", visitors: "15k", image: "https://images.pexels.com/photos/3581368/pexels-photo-3581368.jpeg?auto=compress&cs=tinysrgb&w=600" },
-  { name: "Himachal Pradesh", visitors: "70k", image: "https://images.pexels.com/photos/1583582/pexels-photo-1583582.jpeg?auto=compress&cs=tinysrgb&w=600" },
-  { name: "Jammu and Kashmir", visitors: "25k", image: "https://images.pexels.com/photos/962464/pexels-photo-962464.jpeg?auto=compress&cs=tinysrgb&w=600" },
-  { name: "Kerala", visitors: "14k", image: "https://images.pexels.com/photos/3881104/pexels-photo-3881104.jpeg?auto=compress&cs=tinysrgb&w=600" }
+  { name: "Kashmir Valley", image: "https://images.pexels.com/photos/1583582/pexels-photo-1583582.jpeg?auto=compress&cs=tinysrgb&w=800" },
+  { name: "Manali", image: "https://images.pexels.com/photos/3408744/pexels-photo-3408744.jpeg?auto=compress&cs=tinysrgb&w=800" },
+  { name: "Meghalaya", image: "https://images.pexels.com/photos/2404843/pexels-photo-2404843.jpeg?auto=compress&cs=tinysrgb&w=800" },
+  { name: "Andaman", image: "https://images.pexels.com/photos/1287460/pexels-photo-1287460.jpeg?auto=compress&cs=tinysrgb&w=800" },
+  { name: "Goa", image: "https://images.pexels.com/photos/1450353/pexels-photo-1450353.jpeg?auto=compress&cs=tinysrgb&w=800" },
+  { name: "Rishikesh", image: "https://images.pexels.com/photos/3844790/pexels-photo-3844790.jpeg?auto=compress&cs=tinysrgb&w=800" },
+  { name: "Rajasthan", image: "https://images.pexels.com/photos/3581368/pexels-photo-3581368.jpeg?auto=compress&cs=tinysrgb&w=800" },
+  { name: "Shimla", image: "https://images.pexels.com/photos/1365425/pexels-photo-1365425.jpeg?auto=compress&cs=tinysrgb&w=800" },
+  { name: "Kerala", image: "https://images.pexels.com/photos/3881104/pexels-photo-3881104.jpeg?auto=compress&cs=tinysrgb&w=800" },
 ];
 
 export default function TopLocations() {
   return (
-    <section className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-12">
-          <span className="text-emerald-600 font-semibold text-sm uppercase tracking-wider">Best Top</span>
-          <h2 className="text-4xl font-bold text-gray-800 mt-2 mb-4">Rated Locations</h2>
-          <p className="text-gray-600 text-lg">Pick top destinations for your next holiday</p>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+        .dest-section {
+          background: #FFFDF9;
+          padding: 100px 60px 60px;
+          font-family: 'DM Sans', sans-serif;
+        }
+
+        .dest-header {
+          text-align: center;
+          margin-bottom: 56px;
+        }
+        .dest-eyebrow {
+          display: inline-block;
+          font-size: 11px;
+          letter-spacing: 3px;
+          text-transform: uppercase;
+          font-weight: 700;
+          color: #3D8B5E;
+          margin-bottom: 16px;
+        }
+        .dest-title {
+          font-family: 'Playfair Display', serif;
+          font-size: clamp(36px, 4vw, 56px);
+          font-weight: 700;
+          color: #1B3A2D;
+          line-height: 1.1;
+          letter-spacing: -1px;
+          margin: 0;
+        }
+        .dest-title em {
+          font-style: italic;
+          color: #C9A84C;
+        }
+
+        .dest-mosaic {
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          grid-template-rows: 200px 200px;
+          gap: 12px;
+        }
+
+        .dest-tile:nth-child(1) { grid-column: span 2; }
+        .dest-tile:nth-child(4) { grid-column: span 2; }
+        .dest-tile:nth-child(6) { grid-column: span 2; }
+
+        .dest-tile {
+          border-radius: 16px;
+          overflow: hidden;
+          position: relative;
+          cursor: pointer;
+          transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .dest-tile:hover {
+          transform: scale(1.02);
+          z-index: 2;
+        }
+        .dest-tile img {
+          width: 100%; height: 100%;
+          object-fit: cover;
+          display: block;
+          transition: transform 0.6s ease;
+        }
+        .dest-tile:hover img { transform: scale(1.08); }
+
+        .dest-tile-overlay {
+          position: absolute; inset: 0;
+          background: linear-gradient(to top, rgba(27,58,45,0.8) 0%, transparent 50%);
+        }
+        .dest-tile-label {
+          position: absolute;
+          bottom: 16px; left: 16px;
+          font-family: 'Playfair Display', serif;
+          font-size: 18px; font-weight: 700;
+          color: white;
+        }
+
+        @media (max-width: 900px) {
+          .dest-section { padding: 60px 20px 40px; }
+          .dest-mosaic {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: none;
+          }
+          .dest-tile:nth-child(1),
+          .dest-tile:nth-child(4),
+          .dest-tile:nth-child(6) { grid-column: span 1; }
+          .dest-tile { height: 160px; }
+        }
+      `}</style>
+
+      <section className="dest-section">
+        <div className="dest-header">
+          <div className="dest-eyebrow">✦ Popular Destinations</div>
+          <h2 className="dest-title">
+            India's most <em>magnificent</em> places
+          </h2>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-          {locations.map((location, index) => (
-            <div
-              key={index}
-              className="relative group cursor-pointer overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
-            >
-              <div className="aspect-square relative overflow-hidden">
-                <img
-                  src={location.image}
-                  alt={location.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-
-                <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                  <h3 className="font-bold text-sm mb-1 text-center">{location.name}</h3>
-                  <div className="flex items-center justify-center text-xs opacity-90">
-                    <Users className="w-3 h-3 mr-1" />
-                    <span>{location.visitors} Customers</span>
-                  </div>
-                </div>
-              </div>
+        <div className="dest-mosaic">
+          {locations.map((loc, i) => (
+            <div className="dest-tile" key={i}>
+              <img src={loc.image} alt={loc.name} />
+              <div className="dest-tile-overlay" />
+              <div className="dest-tile-label">{loc.name}</div>
             </div>
           ))}
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }
