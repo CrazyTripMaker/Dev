@@ -6,7 +6,7 @@ import { PackagesList } from '../components/PackagesList';
 import { CategoryForm } from '../components/CategoryForm';
 import { CategoriesList } from '../components/CategoriesList';
 import { ItineraryForm } from '../components/ItineraryForm';
-import { ItinerariesList } from '../components/ItineraryLists';
+import { ItinerariesList } from '../components/itineraryLists';
 import { usePackages } from '../hooks/usePackages';
 import { useCategories } from '../hooks/useCategories';
 import { useItineraries } from '../hooks/useItineraries';
